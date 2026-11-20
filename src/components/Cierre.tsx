@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount } from "@/lib/vision";
+import { formatCents } from "@/lib/money";
+import { DENOMINATIONS, MAX_PHOTO_BYTES, subtotal, totalPesos, type CoinCount } from "@/lib/vision";
 
 export default function Cierre() {
   const [foto, setFoto] = useState<File | null>(null);
@@ -9,8 +10,7 @@ export default function Cierre() {
   const [conteo, setConteo] = useState<CoinCount | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const inFlight = useRef(false);
+  const run = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!foto) return;
@@ -20,40 +20,45 @@ export default function Cierre() {
     return () => URL.revokeObjectURL(url);
   }, [foto]);
 
-  function elegir(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    e.target.value = ""; // permite volver a elegir el mismo archivo
-    if (!f) return;
-    setConteo(null);
-    setFailed(false);
-    if (!f.type.startsWith("image/")) return setError("Elige un archivo de imagen.");
-    if (f.size > MAX_PHOTO_BYTES) return setError("La foto pesa más de 10 MB. Toma o elige otra.");
-    setError(null);
-    setFoto(f);
-  }
+  useEffect(() => () => run.current?.abort(), []);
 
-  async function analizar() {
-    if (!foto || inFlight.current) return;
-    inFlight.current = true;
+  async function analizar(f: File) {
+    run.current?.abort(); // una foto nueva cancela el análisis anterior
+    const ctrl = new AbortController();
+    run.current = ctrl;
     setAnalyzing(true);
     setError(null);
     setConteo(null);
     try {
       const body = new FormData();
-      body.append("foto", foto);
-      const res = await fetch("/api/cierre/analizar", { method: "POST", body, signal: AbortSignal.timeout(90_000) });
+      body.append("foto", f);
+      const res = await fetch("/api/cierre/analizar", {
+        method: "POST",
+        body,
+        signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(90_000)]),
+      });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error ?? "No se pudo analizar la foto.");
-      setConteo(data.conteo as CoinCount);
-      setFailed(false);
+      if (run.current === ctrl) setConteo(data.conteo as CoinCount);
     } catch (e) {
-      setFailed(true);
+      if (ctrl.signal.aborted) return; // reemplazado por otra foto o desmontado
       setError(e instanceof Error && e.name !== "TimeoutError" && e.name !== "TypeError" ? e.message : "Sin conexión con el servidor.");
     } finally {
-      inFlight.current = false;
-      setAnalyzing(false);
+      if (run.current === ctrl) setAnalyzing(false);
     }
   }
+
+  function elegir(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = ""; // permite volver a elegir el mismo archivo
+    if (!f) return;
+    if (!f.type.startsWith("image/")) return setError("Elige un archivo de imagen.");
+    if (f.size > MAX_PHOTO_BYTES) return setError("La foto pesa más de 10 MB. Toma o elige otra.");
+    setFoto(f);
+    void analizar(f); // el análisis empieza en cuanto se elige la foto
+  }
+
+  const total = conteo ? totalPesos(conteo) : 0;
 
   return (
     <main className="screen">
@@ -78,22 +83,29 @@ export default function Cierre() {
         <img className="preview" src={preview} alt="Vista previa de la foto de monedas" />
       )}
 
-      {foto && (
-        <button className="btn primary" onClick={() => void analizar()} disabled={analyzing}>
-          {analyzing ? "Analizando…" : failed ? "Reintentar" : "Analizar foto"}
-        </button>
-      )}
-
+      <p className="notice" role="status">{analyzing ? "Analizando foto…" : null}</p>
       <p className="error" role="alert">{error}</p>
 
+      {foto && error && !analyzing && (
+        <button className="btn primary" onClick={() => void analizar(foto)}>Reintentar</button>
+      )}
+
       {conteo && (
-        <section className="expected" aria-label="Conteo de monedas">
+        <section className="expected" aria-label="Resultado del conteo">
           <span className="label">Monedas encontradas</span>
           <ul className="coins">
             {DENOMINATIONS.map((d) => (
-              <li key={d}><span>${d}</span><strong data-testid={`coin-${d}`}>{conteo[d]}</strong></li>
+              <li key={d}>
+                <span>${d}</span>
+                <strong data-testid={`coin-${d}`}>{conteo[d]}</strong>
+                <span className="sub">{formatCents(subtotal(conteo, d) * 100)}</span>
+              </li>
             ))}
           </ul>
+          <div className="total">
+            <span className="label">Total</span>
+            <strong data-testid="total">{formatCents(total * 100)}</strong>
+          </div>
         </section>
       )}
     </main>

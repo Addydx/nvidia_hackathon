@@ -5,7 +5,8 @@ const TIMEOUT_MS = 60_000;
 const fail = (status: number, error: string) => Response.json({ error }, { status });
 
 export async function POST(request: Request) {
-  const base = process.env.VISION_API_URL;
+  // En desarrollo, si falta VISION_API_URL se usa el servicio local; en producción es obligatoria.
+  const base = process.env.VISION_API_URL || (process.env.NODE_ENV !== "production" ? "http://127.0.0.1:8000" : undefined);
   if (!base) return fail(503, "El servicio de visión no está configurado (falta VISION_API_URL en el servidor).");
 
   let foto: FormDataEntryValue | null;

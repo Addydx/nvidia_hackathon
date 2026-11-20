@@ -21,9 +21,17 @@ describe("POST /api/cierre/analizar", () => {
     expect(String(url)).toBe("http://py.test:8000/contar-monedas");
     expect((init!.body as FormData).get("foto")).toBeInstanceOf(File);
   });
-  it("503 si falta VISION_API_URL", async () => {
+  it("503 si falta VISION_API_URL en producción", async () => {
     delete process.env.VISION_API_URL;
+    vi.stubEnv("NODE_ENV", "production");
     expect((await POST(photo())).status).toBe(503);
+    vi.unstubAllEnvs();
+  });
+  it("en desarrollo usa el servicio local si falta VISION_API_URL", async () => {
+    delete process.env.VISION_API_URL;
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ "1": 1, "2": 0, "5": 0, "10": 0 }));
+    expect((await POST(photo())).status).toBe(200);
+    expect(String(spy.mock.calls[0][0])).toBe("http://127.0.0.1:8000/contar-monedas");
   });
   it("502 si Python no responde, sin filtrar la URL", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("ECONNREFUSED py.test"));

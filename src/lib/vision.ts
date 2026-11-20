@@ -28,3 +28,9 @@ export function parseConteo(json: unknown): CoinCount | null {
   }
   return DENOMINATIONS.every((d) => out[d] !== undefined) ? (out as CoinCount) : null;
 }
+
+/** Valor en pesos de las monedas contadas de una denominación. */
+export const subtotal = (conteo: CoinCount, d: Denomination): number => d * conteo[d];
+
+/** Suma total en pesos de todas las monedas contadas. */
+export const totalPesos = (conteo: CoinCount): number => DENOMINATIONS.reduce((sum, d) => sum + subtotal(conteo, d), 0);

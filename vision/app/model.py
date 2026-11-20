@@ -45,7 +45,14 @@ class CoinDetector:
     def contar(self, imagen) -> dict[str, int]:
         with self._lock:
             result = self._model.predict(
-                source=imagen, imgsz=self.imgsz, conf=self.conf, device=self.device, verbose=False
+                source=imagen,
+                imgsz=self.imgsz,
+                conf=self.conf,
+                device=self.device,
+                verbose=False,
+                # Una moneda física no puede ser dos denominaciones: el NMS agnóstico
+                # descarta la caja duplicada con otra clase sobre la misma moneda.
+                agnostic_nms=True,
             )[0]
         nombres = (self._model.names[int(box.cls.item())] for box in result.boxes)
         return contar(nombres)
