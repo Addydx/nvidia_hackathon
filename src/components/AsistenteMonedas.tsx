@@ -53,13 +53,13 @@ export default function AsistenteMonedas({ conteo, corregido = false, closingId 
     setAuto({ texto: respuestaAuto(c, k), origen: "resumen", cargando: true });
     if (!closingId) { setHistorial([]); setError(""); } // en el modo en vivo, una corrección reinicia la conversación (contexto nuevo)
     const t = setTimeout(async () => {
-      const r = await post({ conteo: c, corregido: k, ...(closingId && { closingId }) });
+      const r = await post({ conteo: c, corregido: k, ...(closingId && isUser && { closingId }) });
       if (mio !== pedido.current) return; // llegó tarde: ya hay otro conteo
       if (r && !("error" in r)) setAuto({ texto: r.respuesta, origen: r.origen, aviso: r.aviso, cargando: false });
       else setAuto({ texto: respuestaAuto(c, k), origen: "resumen", aviso: r ? r.error : "Sin conexión con el asistente; este resumen se calculó en tu dispositivo.", cargando: false });
     }, 450);
     return () => clearTimeout(t);
-  }, [clave, closingId]);
+  }, [clave, closingId, isUser]);
 
   // Conteo guardado: se recupera la conversación del perfil activo.
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function AsistenteMonedas({ conteo, corregido = false, closingId 
     setPendiente(true);
     setError("");
     const { conteo: c, corregido: k } = conteoRef.current;
-    const r = await post({ conteo: c, corregido: k, pregunta: p, ...(closingId && { closingId }) });
+    const r = await post({ conteo: c, corregido: k, pregunta: p, ...(closingId && isUser && { closingId }) });
     setPendiente(false);
     if (!r) return setError("No hay conexión con el asistente. Revisa tu internet e inténtalo de nuevo.");
     if ("error" in r) return setError(r.error);
@@ -94,48 +94,67 @@ export default function AsistenteMonedas({ conteo, corregido = false, closingId 
     setPregunta("");
   }
 
-  const etiqueta = (o: MemoryItem["origin"]) => (o === "modelo" ? "Respuesta de VendIA" : "Resumen automático");
+  const hilo = useRef<HTMLDivElement>(null);
+  useEffect(() => { // la conversación baja sola: el hilo se desplaza, no la página
+    const el = hilo.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [historial.length, pendiente, auto.texto]);
+
+  const etiqueta = (o: MemoryItem["origin"]) => (o === "modelo" ? "VendIA" : "Resumen automático");
   const escuchar = (id: string, texto: string, rotulo: string) =>
     voz.leyendo === id ? (
-      <button key={id} type="button" className="btn-voz" onClick={voz.parar} aria-label="Detener la lectura">■ Detener</button>
+      <button key={id} type="button" className="btn-voz activo" onClick={voz.parar} aria-label="Detener la lectura">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></svg>
+        Detener
+      </button>
     ) : (
-      <button key={id} type="button" className="btn-voz" onClick={() => voz.leer(id, texto)} aria-label={rotulo}>🔊 {rotulo === "Escuchar resultado" ? "Escuchar resultado" : "Escuchar"}</button>
+      <button key={id} type="button" className="btn-voz" onClick={() => voz.leer(id, texto)} aria-label={rotulo}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" fill="currentColor" /></svg>
+        {rotulo === "Escuchar resultado" ? rotulo : "Escuchar"}
+      </button>
     );
 
+  const campo = `pregunta-${closingId ?? "vivo"}`;
   return (
-    <section className="expected asistente" aria-label="Asistente de VendIA">
-      <span className="label">Asistente de VendIA</span>
-      <p className="auto-texto" data-testid="asistente-auto" aria-live="polite">{auto.texto}</p>
-      <p className="muted small" data-testid="asistente-origen">
-        {auto.cargando ? "Actualizando explicación…" : etiqueta(auto.origen)}
-        {auto.aviso ? ` · ${auto.aviso}` : ""}
-      </p>
-      {voz.soportada ? (
-        <div className="voz-fila">
-          {escuchar("auto", auto.texto, "Escuchar resultado")}
+    <section className="chat" aria-label="Asistente VendIA">
+      <header className="chat-cab">
+        <span className="chat-icono" aria-hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2zm7 11l.9 2.6L22.5 16.5l-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13z" fill="currentColor" /></svg>
+        </span>
+        <div>
+          <h2>Asistente VendIA</h2>
+          <p className="chat-estado" data-testid="asistente-origen" role="status">
+            {auto.cargando ? <><span className="punto" aria-hidden /> Generando explicación…</> : auto.aviso ? auto.aviso : auto.origen === "modelo" ? "Responde con el modelo de NVIDIA" : "Resumen calculado en la app"}
+          </p>
         </div>
-      ) : (
-        <p className="muted small" role="status">Tu navegador no admite lectura en voz alta.</p>
-      )}
+      </header>
 
-      <form onSubmit={preguntar}>
-        <label htmlFor={`pregunta-${closingId ?? "vivo"}`}>Pregunta sobre las monedas, las cantidades o el total</label>
-        <input id={`pregunta-${closingId ?? "vivo"}`} placeholder="¿Cuánto suman las monedas de 10 pesos?" value={pregunta} maxLength={240}
-          disabled={pendiente} onChange={(e) => setPregunta(e.target.value)} />
-        <button className="btn secondary" disabled={pendiente || !pregunta.trim()}>{pendiente ? "Consultando…" : "Preguntar"}</button>
-      </form>
-      {error && <p className="error" role="alert">{error}</p>}
-
-      <ul className="history" aria-label="Conversación" aria-live="polite" data-testid="historial">
+      <div className="chat-hilo" ref={hilo} aria-label="Conversación" aria-live="polite" data-testid="historial" tabIndex={0}>
+        <div className="msg asistente">
+          <p data-testid="asistente-auto">{auto.texto}</p>
+          {voz.soportada ? escuchar("auto", auto.texto, "Escuchar resultado") : <p className="chat-nota" role="status">Tu navegador no admite lectura en voz alta.</p>}
+        </div>
         {historial.map((m) => (
-          <li key={m.id}>
-            <p className="q">{m.question}</p>
-            <p className="a"><strong>{etiqueta(m.origin)}</strong> · {m.answer}</p>
-            {voz.soportada && escuchar(m.id, m.answer, "Escuchar respuesta")}
-          </li>
+          <div key={m.id} className="par">
+            <div className="msg usuario"><p>{m.question}</p></div>
+            <div className="msg asistente">
+              <p>{m.answer}</p>
+              <span className="msg-pie">{etiqueta(m.origin)}{voz.soportada && escuchar(m.id, m.answer, "Escuchar respuesta")}</span>
+            </div>
+          </div>
         ))}
-      </ul>
-      {closingId && <p className="muted small">{isUser ? "La conversación se guarda en tu cuenta." : "La conversación se guarda solo en esta pestaña."}</p>}
+        {pendiente && <div className="msg asistente escribiendo" role="status" aria-label="VendIA está respondiendo"><i /><i /><i /></div>}
+        {error && <p className="chat-error" role="alert">{error}</p>}
+      </div>
+
+      <form className="chat-form" onSubmit={preguntar}>
+        <label htmlFor={campo} className="sr-only">Pregunta sobre las monedas, las cantidades o el total</label>
+        <input id={campo} placeholder="Pregunta sobre tus monedas…" value={pregunta} maxLength={240} autoComplete="off" disabled={pendiente} onChange={(e) => setPregunta(e.target.value)} />
+        <button className="chat-enviar" disabled={pendiente || !pregunta.trim()} aria-label={pendiente ? "Consultando" : "Enviar pregunta"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden><path d="M3 20l18-8L3 4v6l11 2-11 2v6z" fill="currentColor" /></svg>
+        </button>
+      </form>
+      {closingId && <p className="chat-nota">{isUser ? "La conversación se guarda en tu cuenta." : "La conversación se guarda solo en esta pestaña."}</p>}
     </section>
   );
 }
