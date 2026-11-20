@@ -1,5 +1,5 @@
 import { MAX_CENTS } from "../money";
-import type { CajaRepo, CajaState, Sale } from "./types";
+import type { CajaRepo, CajaState, Closing, Coins, Sale } from "./types";
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -50,4 +50,39 @@ export async function registerSale(
   const state = await getState(repo);
   if (!state) throw new HttpError(409, "La caja no está abierta");
   return { ...result, state };
+}
+
+const MAX_COINS = 99_999;
+const DENOMS = [1, 2, 5, 10] as const;
+
+/** Valida el conteo recibido: las cuatro denominaciones con enteros entre 0 y 99,999. */
+export function parseCoins(input: unknown): Coins | null {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const src = input as Record<string, unknown>;
+  const out = {} as Coins;
+  for (const d of DENOMS) {
+    const n = src[String(d)];
+    if (typeof n !== "number" || !Number.isInteger(n) || n < 0 || n > MAX_COINS) return null;
+    out[d] = n;
+  }
+  return out;
+}
+
+/** Importes del cierre. El servidor los calcula; el cliente solo manda el conteo de monedas. */
+export function computeClosing(openingCents: number, sales: Sale[], coins: Coins) {
+  const expected = expectedCents(openingCents, sales);
+  const counted = DENOMS.reduce((sum, d) => sum + d * coins[d], 0) * 100;
+  return { expectedCents: expected, countedCents: counted, differenceCents: counted - expected };
+}
+
+export async function closeCaja(
+  repo: CajaRepo,
+  input: { sessionId: unknown; coins: unknown },
+): Promise<{ closing: Closing; duplicate: boolean }> {
+  if (typeof input.sessionId !== "string" || !UUID.test(input.sessionId)) throw new HttpError(400, "Caja no válida");
+  const coins = parseCoins(input.coins);
+  if (!coins) throw new HttpError(400, "Conteo de monedas no válido");
+  const result = await repo.closeSession(input.sessionId, coins);
+  if (!result) throw new HttpError(404, "Caja no encontrada");
+  return result;
 }

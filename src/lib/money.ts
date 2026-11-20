@@ -14,3 +14,12 @@ const mxn = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" 
 export function formatCents(cents: number): string {
   return mxn.format(cents / 100);
 }
+
+export type Difference = { kind: "faltan" | "sobran" | "cuadra"; label: string };
+
+/** Diferencia = contado menos esperado, en centavos. */
+export function describeDifference(differenceCents: number): Difference {
+  if (differenceCents < 0) return { kind: "faltan", label: `Faltan ${formatCents(-differenceCents)}` };
+  if (differenceCents > 0) return { kind: "sobran", label: `Sobran ${formatCents(differenceCents)}` };
+  return { kind: "cuadra", label: "Cuadra" };
+}
