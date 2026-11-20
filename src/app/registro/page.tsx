@@ -9,7 +9,7 @@ export default function Registro() {
       subtitle="Cada cuenta tiene su propia caja."
       submit="Crear cuenta"
       busy="Creando…"
-      success="Listo. Te enviamos un correo para confirmar tu cuenta. Ábrelo y toca el enlace; después inicia sesión."
+      success="Cuenta creada. Si tu proyecto exige confirmar el correo, ábrelo y toca el enlace que te enviamos; después inicia sesión."
       fields={[
         { name: "email", label: "Correo", type: "email", autoComplete: "email" },
         { name: "password", label: "Contraseña (mínimo 8 caracteres)", type: "password", autoComplete: "new-password" },

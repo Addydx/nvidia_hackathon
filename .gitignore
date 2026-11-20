@@ -46,3 +46,4 @@ next-env.d.ts
 /asistente/.venv/
 /asistente/.modelo/
 __pycache__/
+.cutover-previous-image

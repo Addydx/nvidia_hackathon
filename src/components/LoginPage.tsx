@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { RECOVERY_ENABLED } from "@/lib/features";
 import AuthForm, { postJson } from "./AuthForm";
 
 export default function LoginPage() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
         return null;
       }}
       links={[
-        { href: "/recuperar", label: "¿Olvidaste tu contraseña?" },
+        ...(RECOVERY_ENABLED ? [{ href: "/recuperar", label: "¿Olvidaste tu contraseña?" }] : []),
         { href: "/registro", label: "Crear una cuenta" },
       ]}
     />

@@ -51,9 +51,10 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 ## 2. Desplegar
 
 ```bash
-export TAG=sha-<commit completo publicado por el workflow>
+export WEB_TAG=sha-<commit completo publicado por el workflow>
+export VISION_TAG=sha-<commit completo>      # solo cambia si cambió vision/
 export KUBECONFIG=~/.kube/hackathon.kubeconfig
-envsubst '$TAG' < deploy/k8s/hackathon.yaml | k3s kubectl apply -f -
+envsubst '$WEB_TAG $VISION_TAG' < deploy/k8s/hackathon.yaml | k3s kubectl apply -f -
 k3s kubectl -n hackathon rollout status deploy/vision deploy/web
 ```
 
@@ -63,6 +64,25 @@ Comprobar el modelo (desde cualquier pod del namespace):
 k3s kubectl -n hackathon exec deploy/web -- node -e \
   "fetch('http://vision:8000/salud').then(r=>r.text()).then(console.log)"   # modelo_cargado: true
 ```
+
+### Ventana de cambio con migración (versiones que reemplazan funciones SQL)
+
+`20261122000000_cuentas.sql` reemplaza funciones que usa la versión anterior de la app, así que migración y despliegue
+se hacen juntos. Con la imagen ya en el nodo, la ventana dura unos 20 segundos.
+
+```bash
+# 0. Con antelación (no cambia nada en producción):
+deploy/prepull.sh sha-<commit>                  # descarga la imagen en el nodo
+ssh server-home 'bash ~/hackathon/set-anon-key.sh'   # clave anon en el Secret (prompt oculto)
+# 1. Ventana: aplicar la migración (SQL Editor de Supabase / Codex)  ->  inmediatamente:
+deploy/cutover.sh sha-<commit>                  # actualiza Next.js, espera el rollout, pruebas de humo
+```
+
+**Recuperación** (compatible con el esquema nuevo; no borra datos): ejecutar
+`supabase/rollback/20261122000000_cuentas_down.sql` (restaura las funciones y el índice anteriores; exige una sola caja
+abierta en toda la base) y después `deploy/rollback.sh`, que devuelve la imagen guardada en `.cutover-previous-image`.
+Orden: primero el SQL, luego la imagen, para que la versión vieja no arranque contra funciones inexistentes.
+Se puede volver a migrar después sin pérdida.
 
 ## 3. Publicar por HTTPS con Cloudflare (orden importante)
 
@@ -79,7 +99,7 @@ k3s kubectl -n hackathon exec deploy/web -- node -e \
 ## Actualizar el código
 
 1. `git push origin main` → el workflow publica `sha-<commit>`.
-2. Repetir el paso 2 con el nuevo `TAG`. Next.js se actualiza sin corte (`maxUnavailable: 0`).
+2. Repetir el paso 2 con el nuevo `WEB_TAG`. Next.js se actualiza sin corte (`maxUnavailable: 0`).
 
 ## Cambiar la versión del ONNX
 
@@ -98,7 +118,7 @@ El modelo debe detectar exactamente las clases `peso1`, `peso2`, `peso5` y `peso
 
 - **ONNX:** `ln -sfn monedad-v1.onnx monedad.onnx` (en `~/hackathon/models`) y `rollout restart deploy/vision`.
 - **Código:** `k3s kubectl -n hackathon rollout undo deploy/web` (o `deploy/vision`), o aplicar de nuevo
-  el manifiesto con el `TAG` anterior.
+  el manifiesto con el `WEB_TAG` anterior.
 
 ## Versión inicial del modelo
 

@@ -106,6 +106,8 @@ export function authMessage(error: { message?: string; code?: string; status?: n
     return { status: 429, message: "Demasiados intentos. Espera unos minutos y vuelve a intentarlo." };
   if (code === "weak_password") return { status: 400, message: "La contraseña es muy débil. Usa al menos 8 caracteres, con letras y números." };
   if (code === "same_password") return { status: 400, message: "Elige una contraseña distinta a la anterior." };
+  if (code === "user_already_exists" || msg.includes("already registered"))
+    return { status: 409, message: "Ese correo ya tiene una cuenta. Inicia sesión." };
   if (code === "signup_disabled") return { status: 403, message: "El registro está desactivado en este momento." };
   return { status: 500, message: "No se pudo completar la operación. Inténtalo de nuevo." };
 }
