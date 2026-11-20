@@ -1,5 +1,5 @@
-import { requireUser } from "@/lib/auth";
 import { errorResponse } from "@/lib/caja";
+import { rateLimit } from "@/lib/rate-limit";
 import { MAX_PHOTO_BYTES, parseConteo } from "@/lib/vision";
 
 const TIMEOUT_MS = 60_000;
@@ -8,7 +8,7 @@ const fail = (status: number, error: string) => Response.json({ error }, { statu
 
 export async function POST(request: Request) {
   try {
-    await requireUser(); // el análisis de fotos usa CPU: solo para cuentas con sesión
+    rateLimit(request, "analizar", 12); // abierto a invitados: el análisis usa CPU, se limita por IP
   } catch (e) {
     return errorResponse(e);
   }

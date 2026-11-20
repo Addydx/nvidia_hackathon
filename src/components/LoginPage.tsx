@@ -33,6 +33,7 @@ export default function LoginPage() {
       links={[
         ...(RECOVERY_ENABLED ? [{ href: "/recuperar", label: "¿Olvidaste tu contraseña?" }] : []),
         { href: "/registro", label: "Crear una cuenta" },
+        { href: "/", label: "Continuar sin cuenta" },
       ]}
     />
   );

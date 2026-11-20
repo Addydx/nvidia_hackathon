@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { createClient, type Session } from "@supabase/supabase-js";
 import { HttpError } from "../caja/service";
 
-export type AuthUser = { id: string; email: string };
+export type AuthUser = { id: string; email: string; token: string };
 
 const ACCESS = "cc-at";
 const REFRESH = "cc-rt";
@@ -61,13 +61,13 @@ export async function getUser(): Promise<AuthUser | null> {
 
   if (access) {
     const { data } = await client.auth.getUser(access);
-    if (data.user?.email) return { id: data.user.id, email: data.user.email };
+    if (data.user?.email) return { id: data.user.id, email: data.user.email, token: access };
   }
   if (refresh) {
     const { data, error } = await client.auth.refreshSession({ refresh_token: refresh });
     if (!error && data.session?.user.email) {
       await setSessionCookies(data.session);
-      return { id: data.session.user.id, email: data.session.user.email };
+      return { id: data.session.user.id, email: data.session.user.email, token: data.session.access_token };
     }
   }
   if (access || refresh) await clearSessionCookies();
@@ -110,4 +110,19 @@ export function authMessage(error: { message?: string; code?: string; status?: n
     return { status: 409, message: "Ese correo ya tiene una cuenta. Inicia sesión." };
   if (code === "signup_disabled") return { status: 403, message: "El registro está desactivado en este momento." };
   return { status: 500, message: "No se pudo completar la operación. Inténtalo de nuevo." };
+}
+
+/**
+ * Cliente de Supabase que actúa COMO el usuario (su access token): las políticas de acceso (RLS) de la base se
+ * aplican de verdad con auth.uid(). Se usa para la memoria del asistente: aunque el servidor tuviera un error,
+ * la base no entrega ni acepta filas de otro usuario.
+ */
+export function userClient(token: string) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) throw new HttpError(503, "Las cuentas no están configuradas (SUPABASE_URL / SUPABASE_ANON_KEY)");
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
 }

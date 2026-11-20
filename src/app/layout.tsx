@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Nav from "@/components/Nav";
+import ProfileProvider from "@/components/ProfileProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,8 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-MX">
       <body>
-        <Nav />
-        {children}
+        <ProfileProvider>
+          <Nav />
+          {children}
+        </ProfileProvider>
       </body>
     </html>
   );

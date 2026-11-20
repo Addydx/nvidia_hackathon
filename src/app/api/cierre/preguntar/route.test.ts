@@ -1,11 +1,10 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
-import { adminClient, requireUser } from "@/lib/auth";
-import { HttpError } from "@/lib/caja/service";
+import { getUser, userClient } from "@/lib/auth";
 import { explicar } from "@/lib/asistente";
 import { POST } from "./route";
 
-vi.mock("@/lib/auth", () => ({ requireUser: vi.fn(), adminClient: vi.fn() }));
+vi.mock("@/lib/auth", () => ({ getUser: vi.fn(), userClient: vi.fn() }));
 const id = "f8ca2840-a05a-4ffa-850c-8e590146bbdf";
 const row = { expected_cents: 3000, counted_cents: 2700, difference_cents: -300 };
 const question = (pregunta: unknown = "¿Qué pasó y por qué?") => new Request("http://localhost/api/cierre/preguntar", {
@@ -14,39 +13,86 @@ const question = (pregunta: unknown = "¿Qué pasó y por qué?") => new Request
 
 afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
-it("requiere sesión antes de consultar", async () => {
-  vi.mocked(requireUser).mockRejectedValue(new HttpError(401, "Inicia sesión"));
-  expect((await POST(question())).status).toBe(401);
-  expect(adminClient).not.toHaveBeenCalled();
+const guest = (importes: unknown, pregunta: unknown = "¿Cuánto falta?") => new Request("http://localhost/api/cierre/preguntar", {
+  method: "POST", body: JSON.stringify({ importes, pregunta, closingId: id }),
 });
 
-it.each(["propietaria", "otra"])("restringe la consulta al cierre y a la cuenta %s", async (account) => {
-  vi.mocked(requireUser).mockResolvedValue({ id: account, email: "demo@example.com" });
-  const dbFetch = vi.fn(async (input: RequestInfo | URL) => {
+it("sin sesión ni importes no consulta ningún cierre guardado", async () => {
+  vi.mocked(getUser).mockResolvedValue(null);
+  const res = await POST(question());
+  expect(res.status).toBe(401);
+  expect(userClient).not.toHaveBeenCalled();
+});
+
+it("invitado: explica los importes de su pestaña, recalcula la diferencia y no guarda nada", async () => {
+  vi.mocked(getUser).mockResolvedValue(null);
+  vi.stubEnv("CIERRE_CHAT_URL", "");
+  const res = await POST(guest({ expectedCents: 3000, countedCents: 2700, difference_cents: 999 }, "¿Qué pasó?"));
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body).toMatchObject({ origen: "resumen", importes: "Esperado: $30 MXN. Contado: $27 MXN. Diferencia: -$3 MXN." });
+  expect(body.memory).toBeUndefined(); // el servidor no guarda memoria de invitados
+  expect(userClient).not.toHaveBeenCalled();
+});
+
+it.each([[{ expectedCents: -1, countedCents: 0 }], [{ expectedCents: 1.5, countedCents: 0 }], [{ expectedCents: "1", countedCents: 0 }], [null]])(
+  "invitado: rechaza importes no válidos %j", async (importes) => {
+    vi.mocked(getUser).mockResolvedValue(null);
+    expect((await POST(guest(importes))).status).toBe(401);
+  },
+);
+
+it("invitado: limita las consultas por IP", async () => {
+  vi.mocked(getUser).mockResolvedValue(null);
+  vi.stubEnv("CIERRE_CHAT_URL", "");
+  const mk = () => new Request("http://localhost/api/cierre/preguntar", {
+    method: "POST", headers: { "x-forwarded-for": "203.0.113.9" },
+    body: JSON.stringify({ importes: { expectedCents: 100, countedCents: 100 }, pregunta: "¿Cuadró?" }),
+  });
+  const codes: number[] = [];
+  for (let i = 0; i < 22; i++) codes.push((await POST(mk())).status);
+  expect(codes.slice(0, 20).every((c) => c === 200)).toBe(true);
+  expect(codes.slice(20)).toEqual([429, 429]);
+});
+
+it.each(["propietaria", "otra"])("cuenta: restringe la consulta al cierre y a la cuenta %s y guarda la memoria", async (account) => {
+  vi.mocked(getUser).mockResolvedValue({ id: account, email: "demo@example.com", token: "jwt-" + account });
+  const writes: unknown[] = [];
+  const dbFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input));
+    expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer jwt-" + account);
+    if (url.pathname === "/rest/v1/assistant_messages") {
+      writes.push(JSON.parse(String(init?.body)));
+      return Response.json({ id: "m1", question: "q", answer: "a", origin: "resumen", amounts: "x", created_at: "2026-11-20T00:00:00Z" }, { status: 201 });
+    }
     expect(url.pathname).toBe("/rest/v1/cash_closings");
     expect(url.searchParams.get("select")).toContain("cash_sessions!inner(user_id)");
     expect(url.searchParams.get("id")).toBe("eq." + id);
     expect(url.searchParams.get("cash_sessions.user_id")).toBe("eq." + account);
     return Response.json(account === "propietaria" ? [row] : []);
   });
-  vi.mocked(adminClient).mockReturnValue(createClient("http://localhost:54321", "test-key", { global: { fetch: dbFetch } }));
+  vi.mocked(userClient).mockReturnValue(createClient("http://localhost:54321", "anon-key", { global: { fetch: dbFetch, headers: { Authorization: "Bearer jwt-" + account } } }));
   vi.stubEnv("CIERRE_CHAT_URL", "http://modelo.test/chat");
   const inference = vi.fn<typeof fetch>().mockResolvedValue(Response.json({
     choices: [{ message: { content: "Sobran $999 MXN por pagos pendientes." } }],
   }));
   vi.stubGlobal("fetch", inference);
   const res = await POST(question());
-  expect(dbFetch).toHaveBeenCalledOnce();
   expect(res.status).toBe(account === "propietaria" ? 200 : 404);
   if (account === "propietaria") {
-    expect(await res.json()).toMatchObject({ origen: "resumen", respuesta: "Faltan $3 MXN. Con los datos del cierre no puedo determinar la causa." });
+    const body = await res.json();
+    expect(body).toMatchObject({ origen: "resumen", respuesta: "Faltan $3 MXN. Con los datos del cierre no puedo determinar la causa." });
+    expect(body.memory).toMatchObject({ id: "m1" });
+    expect(writes).toEqual([{ user_id: "propietaria", closing_id: id, question: "¿Qué pasó y por qué?", answer: expect.any(String), origin: "resumen", amounts: expect.stringContaining("-$3 MXN") }]);
     expect(inference).toHaveBeenCalledOnce();
     const payload = JSON.parse(String(inference.mock.calls[0][1]?.body));
     expect(payload.messages[1].content).toContain("Pregunta: ¿Qué pasó y por qué?");
     expect(payload.model).toBe("corte-lora");
     expect(payload.messages[1].content).toContain("Diferencia: -$3 MXN");
-  } else expect(inference).not.toHaveBeenCalled();
+  } else {
+    expect(inference).not.toHaveBeenCalled();
+    expect(writes).toEqual([]); // nada se guarda si el cierre no es de la cuenta
+  }
 });
 
 it.each([
@@ -77,9 +123,9 @@ it("protege los 12 casos frente a las respuestas reales guardadas en la T4", asy
 });
 
 it.each([null, "", "  ", "x".repeat(241), { pregunta: "otra" }])("rechaza preguntas no válidas", async pregunta => {
-  vi.mocked(requireUser).mockResolvedValue({id: "cuenta", email: "demo@example.com"});
+  vi.mocked(getUser).mockResolvedValue({ id: "cuenta", email: "demo@example.com", token: "jwt" });
   expect((await POST(question(pregunta))).status).toBe(400);
-  expect(adminClient).not.toHaveBeenCalled();
+  expect(userClient).not.toHaveBeenCalled();
 });
 
 it.each([

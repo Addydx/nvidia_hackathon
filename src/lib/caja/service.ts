@@ -95,3 +95,7 @@ export async function deleteCaja(repo: CajaRepo, userId: string, input: { sessio
   if (!result) throw new HttpError(404, "Caja no encontrada");
   return result;
 }
+
+export async function getLastClosing(repo: CajaRepo, userId: string): Promise<Closing | null> {
+  return repo.getLastClosing(userId);
+}

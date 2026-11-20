@@ -98,6 +98,17 @@ export function createSupabaseRepo(url: string, serviceKey: string): CajaRepo {
       if (error) throw error;
       return { deletedSales: Number((data as { deleted_sales: number }).deleted_sales) };
     },
+    async getLastClosing(userId) {
+      const { data, error } = await db
+        .from("cash_closings")
+        .select("id, session_id, coins_1, coins_2, coins_5, coins_10, expected_cents, counted_cents, difference_cents, closed_at, cash_sessions!inner(user_id)")
+        .eq("cash_sessions.user_id", userId)
+        .order("closed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? toClosing({ ...(data as unknown as ClosingRow), duplicate: false }) : null;
+    },
     async getSale(userId, id) {
       const { data, error } = await db
         .from("sales")

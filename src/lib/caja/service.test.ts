@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMemoryRepo } from "./memory-repo";
-import { closeCaja, deleteCaja, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
+import { closeCaja, deleteCaja, getLastClosing, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
 
 let repo: ReturnType<typeof createMemoryRepo>;
 beforeEach(() => { repo = createMemoryRepo(); });
@@ -214,5 +214,18 @@ describe("aislamiento entre cuentas", () => {
     await closeCaja(repo, U, { sessionId: a.session.id, coins: COINS });
     await expect(closeCaja(repo, V, { sessionId: a.session.id, coins: COINS })).rejects.toMatchObject({ status: 404 });
     expect((await closeCaja(repo, U, { sessionId: a.session.id, coins: COINS })).duplicate).toBe(true);
+  });
+});
+
+describe("último cierre por cuenta", () => {
+  it("cada cuenta recupera solo el suyo, también tras reabrir una caja", async () => {
+    const a = await openCaja(repo, U, 2000);
+    const b = await openCaja(repo, V, 500);
+    const ca = await closeCaja(repo, U, { sessionId: a.session.id, coins: { 1: 20, 2: 0, 5: 0, 10: 0 } });
+    expect((await getLastClosing(repo, U))?.id).toBe(ca.closing.id);
+    expect(await getLastClosing(repo, V)).toBeNull();
+    const cb = await closeCaja(repo, V, { sessionId: b.session.id, coins: { 1: 5, 2: 0, 5: 0, 10: 0 } });
+    expect((await getLastClosing(repo, V))?.id).toBe(cb.closing.id);
+    expect((await getLastClosing(repo, U))?.id).toBe(ca.closing.id);
   });
 });

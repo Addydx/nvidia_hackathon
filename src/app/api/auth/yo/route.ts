@@ -6,7 +6,7 @@ export async function GET() {
   await connection();
   try {
     const user = await getUser();
-    return Response.json({ user: user ? { email: user.email } : null }, { headers: { "Cache-Control": "no-store" } });
+    return Response.json({ user: user ? { id: user.id, email: user.email } : null }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return errorResponse(e);
   }

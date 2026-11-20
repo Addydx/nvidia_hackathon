@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { HttpError } from "@/lib/caja/service";
-
-const requireUser = vi.fn();
-vi.mock("@/lib/auth", () => ({ requireUser: () => requireUser() }));
-const { POST } = await import("./route");
+import { POST } from "./route";
 
 // El servidor Python se simula con fetch: aquí solo se prueba el reenvío y el manejo de errores.
 const photo = () => {
@@ -12,19 +8,21 @@ const photo = () => {
   return new Request("http://x/api/cierre/analizar", { method: "POST", body: fd });
 };
 
-beforeEach(() => {
-  process.env.VISION_API_URL = "http://py.test:8000";
-  requireUser.mockResolvedValue({ id: "u1", email: "a@b.co" });
-});
+beforeEach(() => { process.env.VISION_API_URL = "http://py.test:8000"; });
 afterEach(() => { vi.restoreAllMocks(); delete process.env.VISION_API_URL; });
 
 describe("POST /api/cierre/analizar", () => {
-  it("401 sin sesión y no llama al servicio de visión", async () => {
-    requireUser.mockRejectedValue(new HttpError(401, "Inicia sesión para continuar"));
-    const spy = vi.spyOn(globalThis, "fetch");
-    const res = await POST(photo());
-    expect(res.status).toBe(401);
-    expect(spy).not.toHaveBeenCalled();
+  it("funciona sin cuenta (invitado) y limita las fotos por IP", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => Response.json({ "1": 1, "2": 0, "5": 0, "10": 0 }));
+    const mk = () => {
+      const fd = new FormData();
+      fd.append("foto", new File([new Uint8Array([1, 2, 3])], "m.jpg", { type: "image/jpeg" }));
+      return new Request("http://x/api/cierre/analizar", { method: "POST", body: fd, headers: { "x-forwarded-for": "198.51.100.7" } });
+    };
+    const codes: number[] = [];
+    for (let i = 0; i < 14; i++) codes.push((await POST(mk())).status);
+    expect(codes.slice(0, 12).every((c) => c === 200)).toBe(true);
+    expect(codes.slice(12)).toEqual([429, 429]);
   });
   it("reenvía la foto a /contar-monedas y devuelve el conteo", async () => {
     const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ "1": 2, "2": 1, "5": 0, "10": 3 }));

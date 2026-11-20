@@ -37,7 +37,8 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 
 1. **Migraciones**, en orden (SQL Editor de Supabase, o `supabase db push`), si aún no están aplicadas:
    `20261119000000_caja.sql`, `20261120000000_cierre.sql`, `20261121000000_eliminar_caja.sql` y **`20261122000000_cuentas.sql`**
-   (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario).
+   (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario) y, a continuación, **`20261123000000_perfiles_y_memoria.sql`**
+   (tabla `assistant_messages` con la memoria del asistente por cuenta y políticas RLS: cada cuenta solo ve y escribe lo suyo).
    Las cajas anteriores quedan sin dueño (`user_id` nulo) y ningún usuario las ve; el SQL para asignarlas está al final de la migración.
 2. **Clave pública:** Project Settings → API → *anon / publishable key*. Se añade al Secret como `SUPABASE_ANON_KEY`
    (`deploy/create-secrets.sh` la pide en un prompt oculto). No es la service role.
@@ -47,6 +48,14 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 5. **Correo saliente:** el SMTP integrado de Supabase solo envía a miembros del equipo y con un límite muy bajo. Para que lleguen
    correos a cualquier persona, configura un SMTP propio en Auth → SMTP Settings (Resend, Postmark, etc.).
 6. Solo entonces, desplegar (paso 2). `APP_URL` ya viene en el manifiesto.
+
+### Perfiles: invitado y cuenta
+
+- **Invitado** (sin sesión): Caja, Cierre y el asistente funcionan en el navegador; sus datos y la memoria del asistente viven en
+  `sessionStorage` de la pestaña (sobreviven a una recarga; no se comparten con otras pestañas, navegadores ni dispositivos). El
+  servidor no guarda nada de invitados. Solo el análisis de fotos y las preguntas del asistente pasan por el servidor, con límite por IP.
+- **Cuenta**: cajas, ventas, cierres y memoria del asistente se guardan en Supabase, ligados a su `user_id`. Al iniciar o cerrar
+  sesión se recarga y solo se muestran los datos del perfil activo; nunca se importan ni se mezclan.
 
 ## 2. Desplegar
 

@@ -73,6 +73,11 @@ export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
       open.delete(userId);
       return { deletedSales };
     },
+    async getLastClosing(userId: string) {
+      const mine = [...closings.values()].filter((c) => owned(userId, c.sessionId));
+      mine.sort((a, b) => b.closedAt.localeCompare(a.closedAt));
+      return mine[0] ?? null;
+    },
     async getSale(userId: string, id: string) {
       const sale = sales.get(id);
       return sale && owned(userId, sale.sessionId) ? sale : null;
