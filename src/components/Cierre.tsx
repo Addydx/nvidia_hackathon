@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import PreguntarCierre from "./PreguntarCierre";
 import Link from "next/link";
 import { describeDifference, formatCents } from "@/lib/money";
 import type { CajaState, Closing } from "@/lib/caja/types";
@@ -169,6 +170,7 @@ export default function Cierre() {
           </div>
           <p className="muted" data-testid="closed-difference-cents">Diferencia: {closing.differenceCents} centavos</p>
         </section>
+        <PreguntarCierre key={closing.id} closingId={closing.id} />
         <Link className="btn secondary file-btn" href="/">Abrir otra caja</Link>
       </main>
     );
