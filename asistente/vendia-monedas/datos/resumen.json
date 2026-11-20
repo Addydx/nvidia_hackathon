@@ -1,0 +1,26 @@
+{
+ "semilla": 42,
+ "train": 640,
+ "valid": 96,
+ "test": 36,
+ "tipos_train": {
+  "auto": 193,
+  "limite": 40,
+  "nmon": 54,
+  "alcance": 51,
+  "cant": 103,
+  "sub": 122,
+  "mas": 22,
+  "total": 55
+ },
+ "tipos_test": {
+  "auto": 11,
+  "limite": 1,
+  "alcance": 4,
+  "nmon": 6,
+  "cant": 3,
+  "sub": 10,
+  "total": 1
+ },
+ "combinaciones_unicas_train": 630
+}

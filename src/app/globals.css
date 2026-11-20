@@ -101,3 +101,12 @@ label, .label { display: block; color: var(--muted); font-size: .9rem; margin-bo
 .btn.big { min-height: 76px; font-size: 1.4rem; }
 .late-expected { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
 .late-expected .btn { margin-top: 8px; }
+
+/* Asistente de monedas y voz */
+.asistente form { margin-top: 12px; }
+.asistente .auto-texto { font-size: 1.15rem; line-height: 1.45; margin: 8px 0 4px; }
+.muted.small { font-size: .85rem; margin: 2px 0 8px; }
+.voz-fila { display: flex; gap: 8px; margin-bottom: 4px; }
+.btn-voz { background: none; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 8px 12px; font-size: .95rem; cursor: pointer; min-height: 40px; }
+.btn-voz:hover, .btn-voz:focus-visible { border-color: var(--lime); color: var(--lime); outline: 0; }
+.asistente .history .btn-voz { margin-top: 6px; }
