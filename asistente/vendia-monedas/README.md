@@ -26,8 +26,30 @@ python entrenar.py && python evaluar.py            # solo si falta el adaptador
 VENDIA_API_KEY=$(cat .clave-api) uvicorn servicio_monedas:app --host 127.0.0.1 --port 8001
 ```
 
-## Conexión con la app (estado: PENDIENTE)
-La app usa `CIERRE_CHAT_URL` / `CIERRE_CHAT_KEY` (solo servidor). El laboratorio no acepta conexiones entrantes y no se
-publicó el puerto ni se usó un túnel sin autorización. Opciones: túnel HTTPS autenticado (los «quick tunnels» caducan al
-cerrarse el proceso y no tienen SLA) o ejecutar el servicio en un host propio con GPU. Mientras tanto la app usa el
-resumen determinista (`origen: "resumen"`), con las mismas cifras.
+## Conexión con la app (VERIFICADA 2026-11-20)
+Next.js → `CIERRE_CHAT_URL` (`https://<túnel>.trycloudflare.com/v1/chat/completions`) + `CIERRE_CHAT_KEY` (Bearer), ambos solo
+en el Secret `hackathon-env` del namespace `hackathon`. El túnel apunta SOLO a `127.0.0.1:8001` (nunca a JupyterLab).
+`/salud` confirma `adaptador: vendia-monedas-lora`, `dispositivo: cuda:0`, `gpu: Tesla T4`, y el sha256 del adaptador.
+La app descarta respuestas de otro adaptador o con cifras no verificadas y usa el resumen determinista (`origen: "resumen"`).
+
+### Respaldo
+Adaptador + config en `~/vendia-respaldo/` (Mac del autor, modo 700). sha256 `9fd4a909…01f78`, 17,462,432 B.
+
+### Recuperar el servicio (si el laboratorio se apagó o se reinició)
+Sin el adaptador en el laboratorio: subir `vendia-monedas-lora/` a `/dli/task/my_assessment/hackathon/vendia/` (JupyterLab → Upload)
+o reentrenar con `python entrenar.py`. Luego, en una terminal del laboratorio:
+```bash
+cd /dli/task/my_assessment/hackathon/vendia && source /dli/task/vendia-env/bin/activate
+rm -f .clave-api && nohup python -m uvicorn servicio_monedas:app --host 127.0.0.1 --port 8001 > servicio.log 2>&1 &
+# ruta de arranque (entrega la clave UNA vez):  grep -o "/arranque/[A-Za-z0-9_-]*" servicio.log
+nohup /dli/task/cf/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8001 > cf.log 2>&1 &
+grep -o "https://[a-z0-9-]*\.trycloudflare\.com" cf.log | head -1       # URL nueva del túnel
+```
+Después, actualizar `CIERRE_CHAT_URL` y `CIERRE_CHAT_KEY` en el Secret y reiniciar: 
+`kubectl -n hackathon rollout restart deploy/web`.
+
+### Limitaciones
+- El laboratorio DLI es efímero y el túnel «quick» de Cloudflare no tiene SLA: la URL cambia en cada arranque y caduca al
+  cerrar `cloudflared` o apagarse el laboratorio. Para algo estable: túnel con nombre (cuenta Cloudflare) o host propio con GPU.
+- Con el laboratorio apagado la app sigue funcionando: muestra el resumen determinista con las mismas cifras
+  (`origen: "resumen"`, sin etiqueta de modelo) y nunca lo presenta como inferencia de NVIDIA.
