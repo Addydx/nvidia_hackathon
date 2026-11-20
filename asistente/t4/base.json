@@ -1,0 +1,98 @@
+[
+  {
+    "esperado": 3000,
+    "contado": 2700,
+    "diferencia": -300,
+    "pregunta": "Esperado: $30 MXN. Contado: $27 MXN. Diferencia: -$3 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Faltan $3 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "El cierre se ha producido de la siguiente manera:\n\n1. Esperado: El valor esperado es $30 MXN.\n\n2. Contado: El valor contado es $27 MXN.\n\n3. Diferencia: La diferencia entre los dos valores es -$3 MXN.\n\nLa"
+  },
+  {
+    "esperado": 10525,
+    "contado": 10000,
+    "diferencia": -525,
+    "pregunta": "Esperado: $105.25 MXN. Contado: $100 MXN. Diferencia: -$5.25 MXN. ¿Se perdió una venta?",
+    "objetivo": "Faltan $5.25 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "No se puede determinar si hubo un fallo de venta basándose solo en esta información. La diferencia negativa (-$5.25 MXN) podría deberse a varios factores como errores en el cálculo, problemas con los pagos o inconsistencias en las transacciones. Para confirmar"
+  },
+  {
+    "esperado": 500,
+    "contado": 0,
+    "diferencia": -500,
+    "pregunta": "Esperado: $5 MXN. Contado: $0 MXN. Diferencia: -$5 MXN. ¿Cuánto falta?",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Si esperabas $5 MXN y pagaste $0 MXN, entonces tienes un déficit de $5 MXN. Esto significa que aún no has cubierto tu debito o necesidad económica. Para cerrar este cierre, necesitarías aportar al menos $5 MXN más"
+  },
+  {
+    "esperado": 12500,
+    "contado": 12600,
+    "diferencia": 100,
+    "pregunta": "Esperado: $125 MXN. Contado: $126 MXN. Diferencia: $1 MXN. ¿Qué pasó?",
+    "objetivo": "Sobran $1 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "El cierre se ha producido de manera correcta. La diferencia calculada es de $1 MXN, lo que indica un pequeño error en los datos proporcionados. En este caso, el cierre se ha realizado correctamente y no hay necesidad de realizar cambios o correcciones adicionales."
+  },
+  {
+    "esperado": 9999,
+    "contado": 10000,
+    "diferencia": 1,
+    "pregunta": "Esperado: $99.99 MXN. Contado: $100 MXN. Diferencia: $0.01 MXN. ¿Es un error de cambio?",
+    "objetivo": "Sobran $0.01 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "No es un error de cambio. La diferencia calculada ($0.01 MXN) es muy pequeña y podría ser debido a una variación en los precios o al proceso de cierre del cambio."
+  },
+  {
+    "esperado": 0,
+    "contado": 2500,
+    "diferencia": 2500,
+    "pregunta": "Esperado: $0 MXN. Contado: $25 MXN. Diferencia: $25 MXN. ¿Hay sobrante?",
+    "objetivo": "Sobran $25 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Sí, hay sobrante de $25 MXN."
+  },
+  {
+    "esperado": 0,
+    "contado": 0,
+    "diferencia": 0,
+    "pregunta": "Esperado: $0 MXN. Contado: $0 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "La caja se ha cerrado correctamente ya que el valor esperado es igual al contado ($0 MXN). Esta situación indica que no hubo variaciones significativas entre lo que se esperaba y lo que se recibió."
+  },
+  {
+    "esperado": 9100,
+    "contado": 9100,
+    "diferencia": 0,
+    "pregunta": "Esperado: $91 MXN. Contado: $91 MXN. Diferencia: $0 MXN. Explícame el cierre.",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "El cierre se ha realizado correctamente. La cantidad esperada y contada coincide exactamente en 0 MXN, lo que indica que no hay diferencias entre ambas transacciones. Esto significa que tanto el pago como la recepción han sido realizadas con éxito sin ningún problema o discrepancia."
+  },
+  {
+    "esperado": 4575,
+    "contado": 4575,
+    "diferencia": 0,
+    "pregunta": "Esperado: $45.75 MXN. Contado: $45.75 MXN. Diferencia: $0 MXN. ¿Cuál fue la diferencia?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "La diferencia entre el esperado y el contado es de $0 MXN. Esto significa que ambos valores son exactamente iguales."
+  },
+  {
+    "esperado": null,
+    "contado": 8000,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $80 MXN. Diferencia: sin dato. ¿Cuánto falta?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre.",
+    "respuesta": "Para calcular cuánto falta para completar el cierre de la cuenta, necesitamos conocer los valores esperados y contados. En este caso, solo se proporcionó un valor contado ($80 MXN) pero no se especificó ningún valor esperado.\n\nSi suponemos que el cierre"
+  },
+  {
+    "esperado": 30000,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $300 MXN. Contado: sin dato. Diferencia: sin dato. ¿Se perdió dinero?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre.",
+    "respuesta": "No se puede determinar si se perdió o no dinero basándonos solo en los datos proporcionados. Necesitamos más información sobre las transacciones y cómo se realizó el pago para poder evaluar correctamente si hubo pérdida de dinero."
+  },
+  {
+    "esperado": null,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: sin dato. Diferencia: sin dato. ¿Qué datos necesitas?",
+    "objetivo": "Necesito el efectivo esperado y contado para explicar el cierre.",
+    "respuesta": "Para poder calcular la diferencia entre \"esperado\" y \"contado\", necesitamos los valores de ambos términos. Por favor proporciona los siguientes datos:\n\n1. Valor esperado (en MXN)\n2. Valor contado (en MXN)\n\nUna vez que tengas estos datos, podré"
+  }
+]

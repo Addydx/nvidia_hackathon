@@ -1,0 +1,10 @@
+{
+  "base": "Qwen/Qwen2.5-1.5B-Instruct",
+  "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "seed": 42,
+  "epochs": 2,
+  "precision": "fp16",
+  "lr": 0.0003,
+  "gpu": "Tesla T4",
+  "torch": "2.5.1+cu121"
+}

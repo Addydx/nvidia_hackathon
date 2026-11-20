@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { HttpError, computeClosing } from "./service";
+import { HttpError, computeClosing, computeCount } from "./service";
 import type { CajaRepo, CashSession, Closing, Coins, Sale } from "./types";
 
 type Owned = CashSession & { userId: string };
@@ -8,7 +8,7 @@ type Owned = CashSession & { userId: string };
 export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
   const sessions = new Map<string, Owned>(); // todas las cajas, abiertas o cerradas
   const open = new Map<string, string>(); // userId -> id de su caja abierta
-  const closings = new Map<string, Closing>();
+  const closings = new Map<string, Closing>(); // por id del cierre
   const sales = new Map<string, Sale>();
 
   const owned = (userId: string, sessionId: string) => {
@@ -44,7 +44,7 @@ export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
     async closeSession(userId: string, sessionId: string, coins: Coins) {
       const s = owned(userId, sessionId);
       if (!s) return null;
-      const done = closings.get(sessionId);
+      const done = [...closings.values()].find((c) => c.sessionId === sessionId);
       if (done) return { closing: done, duplicate: true };
       if (open.get(userId) !== sessionId) throw new HttpError(409, "La caja no está abierta");
       const mine = [...sales.values()].filter((x) => x.sessionId === sessionId);
@@ -55,7 +55,7 @@ export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
         ...computeClosing(s.openingCents, mine, coins),
         closedAt: new Date().toISOString(),
       };
-      closings.set(sessionId, closing);
+      closings.set(closing.id, closing);
       open.delete(userId);
       return { closing, duplicate: false };
     },
@@ -72,6 +72,33 @@ export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
       sessions.delete(sessionId);
       open.delete(userId);
       return { deletedSales };
+    },
+    async saveCount(userId: string, input: { id: string; coins: Coins; expectedCents: number | null }) {
+      const done = closings.get(input.id);
+      if (done) {
+        if (!owned(userId, done.sessionId)) throw new HttpError(409, "Este identificador ya se usó");
+        return { closing: done, duplicate: true };
+      }
+      const s: Owned = { id: randomUUID(), userId, openingCents: 0, openedAt: new Date().toISOString() };
+      sessions.set(s.id, s); // sesión ya cerrada: no figura como caja abierta
+      const closing: Closing = { id: input.id, sessionId: s.id, coins: { ...input.coins }, ...computeCount(input.coins, input.expectedCents), closedAt: new Date().toISOString() };
+      closings.set(closing.id, closing);
+      return { closing, duplicate: false };
+    },
+    async setExpected(userId: string, closingId: string, expectedCents: number) {
+      const c = closings.get(closingId);
+      if (!c || !owned(userId, c.sessionId)) return null;
+      const next: Closing = { ...c, expectedCents, differenceCents: c.countedCents - expectedCents };
+      closings.set(closingId, next);
+      return next;
+    },
+    async listClosings(userId: string, limit: number) {
+      return [...closings.values()].reverse().filter((c) => owned(userId, c.sessionId)).sort((a, b) => b.closedAt.localeCompare(a.closedAt)).slice(0, limit); // en empate, el último guardado primero
+    },
+    async getLastClosing(userId: string) {
+      const mine = [...closings.values()].reverse().filter((c) => owned(userId, c.sessionId));
+      mine.sort((a, b) => b.closedAt.localeCompare(a.closedAt));
+      return mine[0] ?? null;
     },
     async getSale(userId: string, id: string) {
       const sale = sales.get(id);

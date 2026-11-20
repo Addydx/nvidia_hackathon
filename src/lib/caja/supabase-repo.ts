@@ -6,7 +6,7 @@ type SessionRow = { id: string; opening_cents: number; opened_at: string };
 type SaleRow = { id: string; session_id: string; amount_cents: number; created_at: string };
 type ClosingRow = {
   id: string; session_id: string; coins_1: number; coins_2: number; coins_5: number; coins_10: number;
-  expected_cents: number; counted_cents: number; difference_cents: number; closed_at: string; duplicate: boolean;
+  expected_cents: number | null; counted_cents: number; difference_cents: number | null; closed_at: string; duplicate: boolean;
 };
 
 const toSession = (r: SessionRow): CashSession => ({
@@ -24,9 +24,9 @@ const toClosing = (r: ClosingRow): Closing => ({
   id: r.id,
   sessionId: r.session_id,
   coins: { 1: r.coins_1, 2: r.coins_2, 5: r.coins_5, 10: r.coins_10 },
-  expectedCents: Number(r.expected_cents),
+  expectedCents: r.expected_cents === null ? null : Number(r.expected_cents),
   countedCents: Number(r.counted_cents),
-  differenceCents: Number(r.difference_cents),
+  differenceCents: r.difference_cents === null ? null : Number(r.difference_cents),
   closedAt: r.closed_at,
 });
 
@@ -97,6 +97,49 @@ export function createSupabaseRepo(url: string, serviceKey: string): CajaRepo {
       if (error?.code === "P0001") throw new HttpError(409, "La caja ya está cerrada");
       if (error) throw error;
       return { deletedSales: Number((data as { deleted_sales: number }).deleted_sales) };
+    },
+    async saveCount(userId, { id, coins, expectedCents }) {
+      const { data, error } = await db.rpc("save_count", {
+        p_user_id: userId,
+        p_id: id,
+        p_coins: { "1": coins[1], "2": coins[2], "5": coins[5], "10": coins[10] },
+        p_expected: expectedCents,
+      });
+      if (error?.code === "PGRST202") throw new HttpError(503, "El guardado en la cuenta aún no está habilitado (falta una migración en la base).");
+      if (error?.code === "P0001") throw new HttpError(409, "Este identificador ya se usó");
+      if (error?.code === "22023") throw new HttpError(400, "Conteo de monedas no válido");
+      if (error) throw error;
+      const row = data as ClosingRow;
+      return { closing: toClosing(row), duplicate: row.duplicate };
+    },
+    async setExpected(userId, closingId, expectedCents) {
+      const { data, error } = await db.rpc("set_count_expected", { p_user_id: userId, p_closing_id: closingId, p_expected: expectedCents });
+      if (error?.code === "PGRST202") throw new HttpError(503, "El guardado en la cuenta aún no está habilitado (falta una migración en la base).");
+      if (error?.code === "P0002") return null;
+      if (error?.code === "22023") throw new HttpError(400, "Efectivo esperado no válido");
+      if (error) throw error;
+      return toClosing(data as ClosingRow);
+    },
+    async listClosings(userId, limit) {
+      const { data, error } = await db
+        .from("cash_closings")
+        .select("id, session_id, coins_1, coins_2, coins_5, coins_10, expected_cents, counted_cents, difference_cents, closed_at, cash_sessions!inner(user_id)")
+        .eq("cash_sessions.user_id", userId)
+        .order("closed_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []).map((r) => toClosing({ ...(r as unknown as ClosingRow), duplicate: false }));
+    },
+    async getLastClosing(userId) {
+      const { data, error } = await db
+        .from("cash_closings")
+        .select("id, session_id, coins_1, coins_2, coins_5, coins_10, expected_cents, counted_cents, difference_cents, closed_at, cash_sessions!inner(user_id)")
+        .eq("cash_sessions.user_id", userId)
+        .order("closed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? toClosing({ ...(data as unknown as ClosingRow), duplicate: false }) : null;
     },
     async getSale(userId, id) {
       const { data, error } = await db

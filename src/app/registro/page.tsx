@@ -26,7 +26,7 @@ export default function Registro() {
         }
         return null;
       }}
-      links={[{ href: "/acceso", label: "Ya tengo cuenta" }]}
+      links={[{ href: "/acceso", label: "Ya tengo cuenta" }, { href: "/", label: "Continuar sin cuenta" }]}
     />
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatCents, parsePesosToCents } from "@/lib/money";
 import { MIN_CHARGE_CENTS } from "@/lib/cobros/constants";
@@ -175,6 +176,7 @@ export default function Cobrar() {
   return (
     <main className="screen">
       <header>
+        <Link className="back-link" href="/">← Contar monedas</Link>
         <h1>Cobrar</h1>
         <p className="muted">Genera un QR y recibe la confirmación del pago aquí mismo.</p>
         {config?.mode === "test" && <p className="badge-test" role="note">Modo prueba: no se cobra dinero real</p>}

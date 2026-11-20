@@ -37,7 +37,11 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 
 1. **Migraciones**, en orden (SQL Editor de Supabase, o `supabase db push`), si aún no están aplicadas:
    `20261119000000_caja.sql`, `20261120000000_cierre.sql`, `20261121000000_eliminar_caja.sql` y **`20261122000000_cuentas.sql`**
-   (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario).
+   (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario) y, a continuación, **`20261123000000_perfiles_y_memoria.sql`**
+   (tabla `assistant_messages` con la memoria del asistente por cuenta y políticas RLS: cada cuenta solo ve y escribe lo suyo) y, por último,
+   **`20261124000000_conteos.sql`** (guardar un conteo sin abrir caja: efectivo esperado opcional y las funciones `save_count` y
+   `set_count_expected`; conserva todos los registros existentes). Sin esta migración los invitados funcionan igual, pero guardar en
+   una cuenta responde «falta una migración en la base».
    Las cajas anteriores quedan sin dueño (`user_id` nulo) y ningún usuario las ve; el SQL para asignarlas está al final de la migración.
 2. **Clave pública:** Project Settings → API → *anon / publishable key*. Se añade al Secret como `SUPABASE_ANON_KEY`
    (`deploy/create-secrets.sh` la pide en un prompt oculto). No es la service role.
@@ -52,9 +56,9 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 
 Código: `src/lib/cobros`, rutas `/api/cobros`, `/api/stripe/webhook` y `/api/stripe/connect`, pantalla `/cobrar`.
 
-1. **Migración** `supabase/migrations/20261123000000_cobros.sql` (aditiva: tablas `payments`, `stripe_events`, `stripe_accounts`
+1. **Migración** `supabase/migrations/20261125000000_cobros.sql` (aditiva: tablas `payments`, `stripe_events`, `stripe_accounts`
    y la función `apply_payment_status`). Se aplica **antes** de desplegar la imagen; no afecta a la versión anterior de la app.
-   Recuperación: `supabase/rollback/20261123000000_cobros_down.sql` (borra los registros de cobros).
+   Recuperación: `supabase/rollback/20261125000000_cobros_down.sql` (borra los registros de cobros).
 2. **Claves en el Secret** (nunca por chat ni Git): `bash ~/hackathon/set-stripe-keys.sh` en server-home. Pide en prompts ocultos la clave
    `sk_live_…`/`rk_live_…` (restringida: *Checkout Sessions = Write*; más *Webhook Endpoints = Write* si dejas que el script cree el webhook),
    los correos autorizados (`STRIPE_OWNER_EMAILS`, **obligatorio**: sin él nadie cobra) y crea el webhook guardando su secreto directamente
@@ -72,6 +76,14 @@ Código: `src/lib/cobros`, rutas `/api/cobros`, `/api/stripe/webhook` y `/api/st
    plataforma, crea un segundo endpoint de webhook en modo «cuentas conectadas» con el evento `account.updated` y los cuatro
    `checkout.session.*`, guarda su secreto como `STRIPE_CONNECT_WEBHOOK_SECRET` y pon `STRIPE_CONNECT_ENABLED=true`.
    Con Connect activo y `STRIPE_OWNER_EMAILS` definido, solo esos correos cobran en tu cuenta; los demás cobran en la suya.
+
+### Perfiles: invitado y cuenta
+
+- **Invitado** (sin sesión): Caja, Cierre y el asistente funcionan en el navegador; sus datos y la memoria del asistente viven en
+  `sessionStorage` de la pestaña (sobreviven a una recarga; no se comparten con otras pestañas, navegadores ni dispositivos). El
+  servidor no guarda nada de invitados. Solo el análisis de fotos y las preguntas del asistente pasan por el servidor, con límite por IP.
+- **Cuenta**: cajas, ventas, cierres y memoria del asistente se guardan en Supabase, ligados a su `user_id`. Al iniciar o cerrar
+  sesión se recarga y solo se muestran los datos del perfil activo; nunca se importan ni se mezclan.
 
 ## 2. Desplegar
 

@@ -1,5 +1,5 @@
-import Caja from "@/components/Caja";
+import Contar from "@/components/Contar";
 
 export default function Home() {
-  return <Caja />;
+  return <Contar />;
 }

@@ -1,0 +1,681 @@
+[
+  {
+    "esperado": 15000,
+    "contado": 15117,
+    "diferencia": 117,
+    "pregunta": "Esperado: $150 MXN. Contado: $151.17 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 15129,
+    "contado": 14798,
+    "diferencia": -331,
+    "pregunta": "Esperado: $151.29 MXN. Contado: $147.98 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 15258,
+    "contado": 15258,
+    "diferencia": 0,
+    "pregunta": "Esperado: $152.58 MXN. Contado: $152.58 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 15387,
+    "contado": 15587,
+    "diferencia": 200,
+    "pregunta": "Esperado: $153.87 MXN. Contado: $155.87 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 15516,
+    "contado": 15016,
+    "diferencia": -500,
+    "pregunta": "Esperado: $155.16 MXN. Contado: $150.16 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 15645,
+    "contado": 15645,
+    "diferencia": 0,
+    "pregunta": "Esperado: $156.45 MXN. Contado: $156.45 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 15891,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $158.91 MXN. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 15903,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $159.03 MXN. Contado: sin dato. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 16032,
+    "contado": 16032,
+    "diferencia": 0,
+    "pregunta": "Esperado: $160.32 MXN. Contado: $160.32 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 16161,
+    "contado": 16361,
+    "diferencia": 200,
+    "pregunta": "Esperado: $161.61 MXN. Contado: $163.61 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 16290,
+    "contado": 15790,
+    "diferencia": -500,
+    "pregunta": "Esperado: $162.90 MXN. Contado: $157.90 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 16419,
+    "contado": 16419,
+    "diferencia": 0,
+    "pregunta": "Esperado: $164.19 MXN. Contado: $164.19 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 16548,
+    "contado": 16665,
+    "diferencia": 117,
+    "pregunta": "Esperado: $165.48 MXN. Contado: $166.65 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 16677,
+    "contado": 16346,
+    "diferencia": -331,
+    "pregunta": "Esperado: $166.77 MXN. Contado: $163.46 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 16806,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $168.06 MXN. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 16935,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $169.35 MXN. Contado: sin dato. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 17064,
+    "contado": 16564,
+    "diferencia": -500,
+    "pregunta": "Esperado: $170.64 MXN. Contado: $165.64 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 17193,
+    "contado": 17193,
+    "diferencia": 0,
+    "pregunta": "Esperado: $171.93 MXN. Contado: $171.93 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 17322,
+    "contado": 17439,
+    "diferencia": 117,
+    "pregunta": "Esperado: $173.22 MXN. Contado: $174.39 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 17451,
+    "contado": 17120,
+    "diferencia": -331,
+    "pregunta": "Esperado: $174.51 MXN. Contado: $171.20 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 17580,
+    "contado": 17580,
+    "diferencia": 0,
+    "pregunta": "Esperado: $175.80 MXN. Contado: $175.80 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 17709,
+    "contado": 17909,
+    "diferencia": 200,
+    "pregunta": "Esperado: $177.09 MXN. Contado: $179.09 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 17338,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $173.38 MXN. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 17967,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $179.67 MXN. Contado: sin dato. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 18096,
+    "contado": 18213,
+    "diferencia": 117,
+    "pregunta": "Esperado: $180.96 MXN. Contado: $182.13 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 18225,
+    "contado": 17894,
+    "diferencia": -331,
+    "pregunta": "Esperado: $182.25 MXN. Contado: $178.94 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 18354,
+    "contado": 18354,
+    "diferencia": 0,
+    "pregunta": "Esperado: $183.54 MXN. Contado: $183.54 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 18483,
+    "contado": 18683,
+    "diferencia": 200,
+    "pregunta": "Esperado: $184.83 MXN. Contado: $186.83 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 18612,
+    "contado": 18112,
+    "diferencia": -500,
+    "pregunta": "Esperado: $186.12 MXN. Contado: $181.12 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 18741,
+    "contado": 18741,
+    "diferencia": 0,
+    "pregunta": "Esperado: $187.41 MXN. Contado: $187.41 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 18987,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $189.87 MXN. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 18999,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $189.99 MXN. Contado: sin dato. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 19128,
+    "contado": 19128,
+    "diferencia": 0,
+    "pregunta": "Esperado: $191.28 MXN. Contado: $191.28 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 19257,
+    "contado": 19457,
+    "diferencia": 200,
+    "pregunta": "Esperado: $192.57 MXN. Contado: $194.57 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 19386,
+    "contado": 18886,
+    "diferencia": -500,
+    "pregunta": "Esperado: $193.86 MXN. Contado: $188.86 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 19515,
+    "contado": 19515,
+    "diferencia": 0,
+    "pregunta": "Esperado: $195.15 MXN. Contado: $195.15 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 19644,
+    "contado": 19761,
+    "diferencia": 117,
+    "pregunta": "Esperado: $196.44 MXN. Contado: $197.61 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 19773,
+    "contado": 19442,
+    "diferencia": -331,
+    "pregunta": "Esperado: $197.73 MXN. Contado: $194.42 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 19902,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $199.02 MXN. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 20031,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $200.31 MXN. Contado: sin dato. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 20160,
+    "contado": 19660,
+    "diferencia": -500,
+    "pregunta": "Esperado: $201.60 MXN. Contado: $196.60 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 20289,
+    "contado": 20289,
+    "diferencia": 0,
+    "pregunta": "Esperado: $202.89 MXN. Contado: $202.89 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 20418,
+    "contado": 20535,
+    "diferencia": 117,
+    "pregunta": "Esperado: $204.18 MXN. Contado: $205.35 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 20547,
+    "contado": 20216,
+    "diferencia": -331,
+    "pregunta": "Esperado: $205.47 MXN. Contado: $202.16 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 20676,
+    "contado": 20676,
+    "diferencia": 0,
+    "pregunta": "Esperado: $206.76 MXN. Contado: $206.76 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 20805,
+    "contado": 21005,
+    "diferencia": 200,
+    "pregunta": "Esperado: $208.05 MXN. Contado: $210.05 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 20434,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $204.34 MXN. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 21063,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $210.63 MXN. Contado: sin dato. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 21192,
+    "contado": 21309,
+    "diferencia": 117,
+    "pregunta": "Esperado: $211.92 MXN. Contado: $213.09 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 21321,
+    "contado": 20990,
+    "diferencia": -331,
+    "pregunta": "Esperado: $213.21 MXN. Contado: $209.90 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 21450,
+    "contado": 21450,
+    "diferencia": 0,
+    "pregunta": "Esperado: $214.50 MXN. Contado: $214.50 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 21579,
+    "contado": 21779,
+    "diferencia": 200,
+    "pregunta": "Esperado: $215.79 MXN. Contado: $217.79 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 21708,
+    "contado": 21208,
+    "diferencia": -500,
+    "pregunta": "Esperado: $217.08 MXN. Contado: $212.08 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 21837,
+    "contado": 21837,
+    "diferencia": 0,
+    "pregunta": "Esperado: $218.37 MXN. Contado: $218.37 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 22083,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $220.83 MXN. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 22095,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $220.95 MXN. Contado: sin dato. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 22224,
+    "contado": 22224,
+    "diferencia": 0,
+    "pregunta": "Esperado: $222.24 MXN. Contado: $222.24 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 22353,
+    "contado": 22553,
+    "diferencia": 200,
+    "pregunta": "Esperado: $223.53 MXN. Contado: $225.53 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 22482,
+    "contado": 21982,
+    "diferencia": -500,
+    "pregunta": "Esperado: $224.82 MXN. Contado: $219.82 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 22611,
+    "contado": 22611,
+    "diferencia": 0,
+    "pregunta": "Esperado: $226.11 MXN. Contado: $226.11 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 22740,
+    "contado": 22857,
+    "diferencia": 117,
+    "pregunta": "Esperado: $227.40 MXN. Contado: $228.57 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 22869,
+    "contado": 22538,
+    "diferencia": -331,
+    "pregunta": "Esperado: $228.69 MXN. Contado: $225.38 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 22998,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $229.98 MXN. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 23127,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $231.27 MXN. Contado: sin dato. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 23256,
+    "contado": 22756,
+    "diferencia": -500,
+    "pregunta": "Esperado: $232.56 MXN. Contado: $227.56 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 23385,
+    "contado": 23385,
+    "diferencia": 0,
+    "pregunta": "Esperado: $233.85 MXN. Contado: $233.85 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 23514,
+    "contado": 23631,
+    "diferencia": 117,
+    "pregunta": "Esperado: $235.14 MXN. Contado: $236.31 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 23643,
+    "contado": 23312,
+    "diferencia": -331,
+    "pregunta": "Esperado: $236.43 MXN. Contado: $233.12 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 23772,
+    "contado": 23772,
+    "diferencia": 0,
+    "pregunta": "Esperado: $237.72 MXN. Contado: $237.72 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 23901,
+    "contado": 24101,
+    "diferencia": 200,
+    "pregunta": "Esperado: $239.01 MXN. Contado: $241.01 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 23530,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $235.30 MXN. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 24159,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $241.59 MXN. Contado: sin dato. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 24288,
+    "contado": 24405,
+    "diferencia": 117,
+    "pregunta": "Esperado: $242.88 MXN. Contado: $244.05 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 24417,
+    "contado": 24086,
+    "diferencia": -331,
+    "pregunta": "Esperado: $244.17 MXN. Contado: $240.86 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 24546,
+    "contado": 24546,
+    "diferencia": 0,
+    "pregunta": "Esperado: $245.46 MXN. Contado: $245.46 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 24675,
+    "contado": 24875,
+    "diferencia": 200,
+    "pregunta": "Esperado: $246.75 MXN. Contado: $248.75 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 24804,
+    "contado": 24304,
+    "diferencia": -500,
+    "pregunta": "Esperado: $248.04 MXN. Contado: $243.04 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 24933,
+    "contado": 24933,
+    "diferencia": 0,
+    "pregunta": "Esperado: $249.33 MXN. Contado: $249.33 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 25179,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $251.79 MXN. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 25191,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $251.91 MXN. Contado: sin dato. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 25320,
+    "contado": 25320,
+    "diferencia": 0,
+    "pregunta": "Esperado: $253.20 MXN. Contado: $253.20 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 25449,
+    "contado": 25649,
+    "diferencia": 200,
+    "pregunta": "Esperado: $254.49 MXN. Contado: $256.49 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 25578,
+    "contado": 25078,
+    "diferencia": -500,
+    "pregunta": "Esperado: $255.78 MXN. Contado: $250.78 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 25707,
+    "contado": 25707,
+    "diferencia": 0,
+    "pregunta": "Esperado: $257.07 MXN. Contado: $257.07 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 25836,
+    "contado": 25953,
+    "diferencia": 117,
+    "pregunta": "Esperado: $258.36 MXN. Contado: $259.53 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 25965,
+    "contado": 25634,
+    "diferencia": -331,
+    "pregunta": "Esperado: $259.65 MXN. Contado: $256.34 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 26094,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $260.94 MXN. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 26223,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $262.23 MXN. Contado: sin dato. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 26352,
+    "contado": 25852,
+    "diferencia": -500,
+    "pregunta": "Esperado: $263.52 MXN. Contado: $258.52 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 26481,
+    "contado": 26481,
+    "diferencia": 0,
+    "pregunta": "Esperado: $264.81 MXN. Contado: $264.81 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 26610,
+    "contado": 26727,
+    "diferencia": 117,
+    "pregunta": "Esperado: $266.10 MXN. Contado: $267.27 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 26739,
+    "contado": 26408,
+    "diferencia": -331,
+    "pregunta": "Esperado: $267.39 MXN. Contado: $264.08 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 26868,
+    "contado": 26868,
+    "diferencia": 0,
+    "pregunta": "Esperado: $268.68 MXN. Contado: $268.68 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 26997,
+    "contado": 27197,
+    "diferencia": 200,
+    "pregunta": "Esperado: $269.97 MXN. Contado: $271.97 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 26626,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $266.26 MXN. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 27255,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $272.55 MXN. Contado: sin dato. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": null,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: sin dato. Diferencia: sin dato. ¿Qué falta?",
+    "objetivo": "Necesito el efectivo esperado y contado para explicar el cierre."
+  }
+]
