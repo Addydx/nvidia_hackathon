@@ -1,11 +1,6 @@
 # Corte de caja · namespace exclusivo "hackathon". No toca otros namespaces (AlePay, addydx).
 # Aplicar:  export TAG=sha-<commit>;  envsubst '$TAG' < deploy/k8s/hackathon.yaml | kubectl apply -f -
-# Requiere antes (ver deploy/README.md): Secret "hackathon-env" y Secret "ghcr-pull" en el namespace.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: hackathon
----
+# El namespace lo crea deploy/admin-setup.sh. Requiere antes (ver deploy/README.md): Secret "hackathon-env" y Secret "ghcr-pull" en el namespace.
 # Python: solo recibe tráfico de Next.js. Modelo en solo lectura desde el host.
 apiVersion: apps/v1
 kind: Deployment
