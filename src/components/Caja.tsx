@@ -33,6 +33,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<{ ok: true; dat
       signal: AbortSignal.timeout(10_000),
     });
     const body = await res.json().catch(() => ({}));
+    if (res.status === 401) window.location.replace("/acceso"); // sesión vencida o sin iniciar
     if (res.ok) return { ok: true, data: body as T };
     return { ok: false, status: res.status, error: body?.error ?? "No se pudo completar la operación" };
   } catch {
@@ -137,7 +138,7 @@ export default function Caja() {
     if (!state || deleting) return;
     setDeleting(true);
     setDeleteError(null);
-    const r = await api<{ deletedSales: number }>("/api/caja/eliminar", {
+    const r = await api<{ deletedSales: number }>("/api/caja/limpiar", {
       method: "POST",
       body: JSON.stringify({ sessionId: state.session.id }),
     });
@@ -237,22 +238,22 @@ export default function Caja() {
       </section>
 
       {confirmingDelete ? (
-        <section className="pending failed" aria-label="Confirmar eliminación" role="alertdialog" aria-labelledby="del-title">
-          <p id="del-title" className="label">¿Eliminar la caja abierta?</p>
+        <section className="pending failed" aria-label="Confirmar limpieza" role="alertdialog" aria-labelledby="del-title">
+          <p id="del-title" className="label">¿Limpiar la caja?</p>
           <strong data-testid="delete-count">
             Se borrarán {sales.length} {sales.length === 1 ? "venta" : "ventas"} y la apertura.
           </strong>
           <p className="muted">Esta acción no se puede deshacer.</p>
           <p className="error" role="alert">{deleteError}</p>
           <button className="btn primary" onClick={() => void eliminar()} disabled={deleting}>
-            {deleting ? "Eliminando…" : "Sí, eliminar"}
+            {deleting ? "Limpiando…" : "Sí, limpiar"}
           </button>
           <button className="btn secondary" onClick={() => { setConfirmingDelete(false); setDeleteError(null); }} disabled={deleting}>
             Cancelar
           </button>
         </section>
       ) : (
-        <button className="btn secondary" onClick={() => setConfirmingDelete(true)}>Eliminar caja abierta</button>
+        <button className="btn-quiet" onClick={() => setConfirmingDelete(true)}>Limpiar caja</button>
       )}
     </main>
   );

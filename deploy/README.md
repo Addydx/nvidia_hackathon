@@ -30,6 +30,24 @@ Con ese kubeconfig se opera sin sudo: `KUBECONFIG=~/.kube/hackathon.kubeconfig k
 El Secret `hackathon-env` (Supabase) se crea con `deploy/create-secrets.sh` o directamente desde el Mac por SSH
 leyendo `.env.local`, sin imprimir los valores.
 
+## 1b. Cuentas por correo (Supabase Auth) — antes de desplegar esta versión
+
+La app exige sesión. Hay que preparar el proyecto de Supabase del hackathon **antes** de actualizar el despliegue; si no,
+la versión nueva no puede leer las cajas ni iniciar sesión.
+
+1. **Migraciones**, en orden (SQL Editor de Supabase, o `supabase db push`), si aún no están aplicadas:
+   `20261119000000_caja.sql`, `20261120000000_cierre.sql`, `20261121000000_eliminar_caja.sql` y **`20261122000000_cuentas.sql`**
+   (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario).
+   Las cajas anteriores quedan sin dueño (`user_id` nulo) y ningún usuario las ve; el SQL para asignarlas está al final de la migración.
+2. **Clave pública:** Project Settings → API → *anon / publishable key*. Se añade al Secret como `SUPABASE_ANON_KEY`
+   (`deploy/create-secrets.sh` la pide en un prompt oculto). No es la service role.
+3. **Auth → URL Configuration:** *Site URL* `https://nvidia.addydx.com` y en *Redirect URLs* `https://nvidia.addydx.com/**`.
+   Sin esto los enlaces de los correos no redirigen a la app.
+4. **Auth → Providers → Email** activo. Recomendado: *Confirm email* activado (la app lo soporta y muestra el aviso).
+5. **Correo saliente:** el SMTP integrado de Supabase solo envía a miembros del equipo y con un límite muy bajo. Para que lleguen
+   correos a cualquier persona, configura un SMTP propio en Auth → SMTP Settings (Resend, Postmark, etc.).
+6. Solo entonces, desplegar (paso 2). `APP_URL` ya viene en el manifiesto.
+
 ## 2. Desplegar
 
 ```bash

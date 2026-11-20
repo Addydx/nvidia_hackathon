@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "./route";
+import { HttpError } from "@/lib/caja/service";
+
+const requireUser = vi.fn();
+vi.mock("@/lib/auth", () => ({ requireUser: () => requireUser() }));
+const { POST } = await import("./route");
 
 // El servidor Python se simula con fetch: aquí solo se prueba el reenvío y el manejo de errores.
 const photo = () => {
@@ -8,10 +12,20 @@ const photo = () => {
   return new Request("http://x/api/cierre/analizar", { method: "POST", body: fd });
 };
 
-beforeEach(() => { process.env.VISION_API_URL = "http://py.test:8000"; });
+beforeEach(() => {
+  process.env.VISION_API_URL = "http://py.test:8000";
+  requireUser.mockResolvedValue({ id: "u1", email: "a@b.co" });
+});
 afterEach(() => { vi.restoreAllMocks(); delete process.env.VISION_API_URL; });
 
 describe("POST /api/cierre/analizar", () => {
+  it("401 sin sesión y no llama al servicio de visión", async () => {
+    requireUser.mockRejectedValue(new HttpError(401, "Inicia sesión para continuar"));
+    const spy = vi.spyOn(globalThis, "fetch");
+    const res = await POST(photo());
+    expect(res.status).toBe(401);
+    expect(spy).not.toHaveBeenCalled();
+  });
   it("reenvía la foto a /contar-monedas y devuelve el conteo", async () => {
     const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ "1": 2, "2": 1, "5": 0, "10": 3 }));
     const res = await POST(photo());

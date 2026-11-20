@@ -8,9 +8,11 @@ k3s kubectl get ns hackathon >/dev/null 2>&1 || k3s kubectl create namespace hac
 
 read -r -p "SUPABASE_URL del hackathon: " SUPABASE_URL
 read -r -s -p "SUPABASE_SERVICE_ROLE_KEY (no se muestra): " SUPABASE_SERVICE_ROLE_KEY; echo
+read -r -s -p "SUPABASE_ANON_KEY / publishable key (no se muestra): " SUPABASE_ANON_KEY; echo
 $K create secret generic hackathon-env \
   --from-literal=SUPABASE_URL="$SUPABASE_URL" \
   --from-literal=SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+  --from-literal=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
   --dry-run=client -o yaml | $K apply -f -
 
 read -r -p "Usuario de GitHub para GHCR [Addydx]: " GH_USER; GH_USER=${GH_USER:-Addydx}

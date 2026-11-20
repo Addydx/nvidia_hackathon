@@ -43,6 +43,7 @@ export default function Cierre() {
     try {
       const res = await fetch("/api/caja", { cache: "no-store", signal: AbortSignal.timeout(10_000) });
       const body = await res.json().catch(() => ({}));
+      if (res.status === 401) return void window.location.replace("/acceso");
       if (!res.ok) throw new Error(body?.error ?? "No se pudo cargar la caja.");
       setCaja(body.state as CajaState | null);
     } catch (e) {
@@ -71,6 +72,7 @@ export default function Cierre() {
         signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(90_000)]),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) return void window.location.replace("/acceso");
       if (!res.ok) throw new Error(data?.error ?? "No se pudo analizar la foto.");
       if (run.current === ctrl) {
         const c = data.conteo as CoinCount;
@@ -116,6 +118,7 @@ export default function Cierre() {
         signal: AbortSignal.timeout(15_000),
       });
       const body = await res.json().catch(() => ({}));
+      if (res.status === 401) return void window.location.replace("/acceso");
       if (!res.ok) throw new Error(body?.error ?? "No se pudo confirmar el cierre.");
       setClosing(body.closing as Closing);
     } catch (e) {
