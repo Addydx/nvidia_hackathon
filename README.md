@@ -2,6 +2,20 @@
 
 PWA para vendedores ambulantes. Hoy incluye **Caja** (abrir caja, ventas en efectivo, efectivo esperado) y, en **Cierre**, la captura de una foto y el conteo de monedas ($1, $2, $5, $10) que devuelve el modelo de visión. La documentación del equipo está en [`Docs/`](Docs).
 
+## Documentación técnica (hackathon NVIDIA Oaxaca 2026)
+
+| Documento | Contenido |
+|---|---|
+| [`Docs/01_configuracion.md`](Docs/01_configuracion.md) | Requisitos, dependencias, versiones, variables de entorno y configuración |
+| [`Docs/02_entrenamiento_chat.md`](Docs/02_entrenamiento_chat.md) | Qwen + LoRA: dataset, GPU NVIDIA, métricas y archivos generados |
+| [`Docs/03_ejecucion.md`](Docs/03_ejecucion.md) | Cómo iniciar VendIA, cargar ONNX y Qwen y comprobar los servicios |
+| [`Docs/04_arquitectura.md`](Docs/04_arquitectura.md) | Next.js, Supabase, ONNX, FastAPI, Qwen y NVIDIA |
+| [`Docs/05_componentes_licencias.md`](Docs/05_componentes_licencias.md) | Componentes, herramientas de IA, fuentes y licencias |
+| [`Docs/06_funcionalidades.md`](Docs/06_funcionalidades.md) | Funciones implementadas, simuladas, pendientes y limitaciones |
+
+Versiones Word: [`VendIA_Documentacion_Tecnica.docx`](Docs/entregables/VendIA_Documentacion_Tecnica.docx) y [`VendIA_Entrenamiento_y_Estado.docx`](Docs/entregables/VendIA_Entrenamiento_y_Estado.docx).
+Cuaderno del chatbot (corte-lora): [`asistente/corte.ipynb`](asistente/corte.ipynb). El adaptador final `vendia-monedas-lora` se entrenó con los scripts de [`asistente/vendia-monedas/`](asistente/vendia-monedas/README.md).
+
 Stack: Next.js (App Router) + TypeScript + Supabase PostgreSQL. Importes en **centavos enteros**; todas las escrituras pasan por Route Handlers del servidor con la service role key (nunca llega al navegador).
 
 ## Ejecutar
