@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "vision/**", // servicio Python (incluye .venv)
   ]),
 ]);
 
