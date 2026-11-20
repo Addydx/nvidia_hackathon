@@ -8,6 +8,8 @@ import type { Conteo } from "@/lib/monedas-asistente";
 import GuestBanner from "./GuestBanner";
 import CobrarCta from "./CobrarCta";
 import AsistenteMonedas from "./AsistenteMonedas";
+import RetroConteo from "./RetroConteo";
+import { sinMonedas } from "@/lib/retroalimentacion";
 import { useProfile } from "./ProfileProvider";
 
 const emptyCounts = (): Record<Denomination, string> => ({ 1: "0", 2: "0", 5: "0", 10: "0" });
@@ -26,6 +28,7 @@ export default function Contar() {
   const [foto, setFoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [vacio, setVacio] = useState(false); // la foto se leyó bien pero no hay monedas
   const [analyzing, setAnalyzing] = useState(false);
   const run = useRef<AbortController | null>(null);
 
@@ -67,14 +70,22 @@ export default function Contar() {
     run.current = ctrl;
     setAnalyzing(true);
     setError(null);
+    setVacio(false);
     try {
       const body = new FormData();
       body.append("foto", f);
       const res = await fetch("/api/cierre/analizar", { method: "POST", body, signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(90_000)]) });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error ?? "No se pudo analizar la foto.");
+      if (res.status === 400 || res.status === 413 || res.status === 429) throw new Error(data?.error ?? "La imagen no es válida.");
+      if (!res.ok) throw new Error("El servicio de análisis no respondió bien. Reintenta en un momento.");
       if (run.current === ctrl) {
         const c = data.conteo as CoinCount;
+        if (sinMonedas(c)) { // cero detecciones: se orienta, no se ofrece guardar un conteo vacío
+          setVacio(true);
+          setEditing(false);
+          setOriginal(null);
+          return;
+        }
         // la lectura de la foto es solo una propuesta: el usuario la revisa y corrige
         setEdit({ 1: String(c[1]), 2: String(c[2]), 5: String(c[5]), 10: String(c[10]) });
         setOriginal(c);
@@ -85,7 +96,7 @@ export default function Contar() {
       }
     } catch (e) {
       if (ctrl.signal.aborted) return; // reemplazado por otra foto o desmontado
-      setError(e instanceof Error && e.name !== "TimeoutError" && e.name !== "TypeError" ? e.message : "Sin conexión con el servidor.");
+      setError(e instanceof Error && e.name !== "TimeoutError" && e.name !== "TypeError" ? e.message : "Sin conexión con el servidor. Revisa tu internet y reintenta.");
     } finally {
       if (run.current === ctrl) setAnalyzing(false);
     }
@@ -176,6 +187,18 @@ export default function Contar() {
       )}
       <p className="error" role="alert">{error}</p>
 
+      {vacio && !analyzing && (
+        <section className="orienta" role="status" aria-label="Sin monedas detectadas">
+          <strong>No detecté monedas.</strong>
+          <p>Intenta con otra foto, con buena iluminación y las monedas separadas.</p>
+          <ul>
+            <li>Fondo liso y sin sombras fuertes.</li>
+            <li>Una moneda al lado de otra, sin encimarse.</li>
+            <li>Cámara de frente y cerca de las monedas.</li>
+          </ul>
+        </section>
+      )}
+
       {foto && error && !analyzing && <button className="btn primary" onClick={() => void analizar(foto)}>Reintentar</button>}
       {!editing && !analyzing && (
         <button className="btn-quiet" onClick={() => { setEditing(true); saveId.current = null; }}>Contar a mano</button>
@@ -203,6 +226,10 @@ export default function Contar() {
               </li>
             ))}
           </ul>
+          {valid && original && conteoVivo && (
+            <RetroConteo key={`retro-${fotoId}`} id={`foto-${fotoId}`} original={{ 1: original[1], 2: original[2], 5: original[5], 10: original[10] }} actual={conteoVivo}
+              onOtraFoto={() => document.querySelector<HTMLInputElement>(".photo-actions input")?.click()} />
+          )}
           {!valid && <p className="error" role="alert">Escribe un número entero de monedas (0 a 99999) en cada fila.</p>}
           <p className="error" role="alert">{saveError}</p>
           <button className="btn primary" disabled={!valid || saving || analyzing} onClick={() => void guardar()}>
