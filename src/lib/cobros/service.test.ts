@@ -76,7 +76,7 @@ let st: ReturnType<typeof fakeStripe>;
 let d: Deps;
 beforeEach(() => {
   repo = memoryRepo(); st = fakeStripe();
-  d = { repo, stripe: st.api, baseUrl: "https://nvidia.addydx.com", connectEnabled: false, ownerEmails: [] };
+  d = { repo, stripe: st.api, baseUrl: "https://nvidia.addydx.com", connectEnabled: false, ownerEmails: ["uno@example.com", "dos@example.com"] };
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
 
@@ -131,10 +131,18 @@ describe("crear cobro", () => {
     await expect(createCharge(d, U1, { id: other, amountCents: 7000 })).rejects.toMatchObject({ status: 409 });
   });
 
-  it("solo el propietario cobra en su cuenta cuando hay lista de propietarios", async () => {
+  it("sin STRIPE_OWNER_EMAILS nadie cobra (falla cerrado)", async () => {
+    d.ownerEmails = [];
+    await expect(createCharge(d, U1, { id: ID, amountCents: 5000 })).rejects.toMatchObject({ status: 503 });
+    expect(st.calls.create).toBe(0);
+    expect(repo.rows.size).toBe(0);
+  });
+
+  it("solo el propietario cobra en su cuenta (el correo se compara sin importar mayúsculas)", async () => {
     d.ownerEmails = ["uno@example.com"];
+    await expect(createCharge(d, { ...U2, email: "UNO@example.com.mx" }, { id: ID, amountCents: 5000 })).rejects.toMatchObject({ status: 403 });
     await expect(createCharge(d, U2, { id: ID, amountCents: 5000 })).rejects.toMatchObject({ status: 403 });
-    expect((await createCharge(d, U1, { id: ID, amountCents: 5000 })).payment.id).toBe(ID);
+    expect((await createCharge(d, { ...U1, email: "Uno@Example.com" }, { id: ID, amountCents: 5000 })).payment.id).toBe(ID);
     expect(repo.rows.get(ID)!.stripeAccountId).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import { connection } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { errorResponse, getDeps } from "@/lib/cobros";
-import { createCharge, getConnectStatus, listCharges } from "@/lib/cobros/service";
+import { canCharge, createCharge, getConnectStatus, listCharges } from "@/lib/cobros/service";
 import { stripeConfigured, stripeMode } from "@/lib/cobros/stripe";
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -11,8 +11,11 @@ export async function GET(request: Request) {
   try {
     const user = await requireUser();
     const d = getDeps(request);
-    const [payments, connect] = await Promise.all([listCharges(d, user.id), getConnectStatus(d, user.id)]);
-    return Response.json({ payments, config: { configured: stripeConfigured(), mode: stripeMode(), connect } }, { headers: NO_STORE });
+    const [payments, connect, can] = await Promise.all([listCharges(d, user.id), getConnectStatus(d, user.id), canCharge(d, user)]);
+    return Response.json(
+      { payments, config: { configured: stripeConfigured(), mode: stripeMode(), connect, authorized: can.allowed, reason: can.reason } },
+      { headers: NO_STORE },
+    );
   } catch (e) {
     return errorResponse(e);
   }

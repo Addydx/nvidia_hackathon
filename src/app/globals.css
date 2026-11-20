@@ -106,6 +106,7 @@ label, .label { display: block; color: var(--muted); font-size: .9rem; margin-bo
 
 /* Pantalla Cobrar */
 .badge-test { display: inline-block; margin: 8px 0 0; padding: 4px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; color: #111a00; background: #f5c542; }
+.badge-live { display: inline-block; margin: 8px 0 0; padding: 4px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; color: #111a00; background: linear-gradient(135deg, #76b900, #a3e635); }
 .quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .quick button { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 1rem; font-weight: 700; cursor: pointer; }
 .quick button:hover, .quick button:focus-visible { border-color: var(--lime); outline: 0; }

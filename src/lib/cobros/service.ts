@@ -20,7 +20,7 @@ export type Deps = {
   /** URL pública de la app (success/cancel de Checkout). */
   baseUrl: string;
   connectEnabled: boolean;
-  /** Correos que cobran en la cuenta Stripe del propietario. Vacío = cualquier usuario autenticado (demo). */
+  /** Correos que cobran en la cuenta Stripe del propietario (STRIPE_OWNER_EMAILS). Obligatorio: vacío = nadie cobra. */
   ownerEmails: string[];
   now?: () => number;
 };
@@ -29,15 +29,28 @@ export const parseOwnerEmails = (v: string | undefined) =>
   (v ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
 /**
- * ¿En qué cuenta de Stripe se cobra? v1: la del propietario (null). Con Connect activo y un correo que
- * no es del propietario, cada vendedor cobra en SU cuenta conectada y nunca en la del propietario.
+ * ¿En qué cuenta de Stripe se cobra? La del propietario (null) SOLO para los correos de STRIPE_OWNER_EMAILS:
+ * es obligatoria. Sin lista, nadie cobra (falla cerrado). Con Connect activo, el resto de vendedores cobra
+ * en SU cuenta conectada y nunca en la del propietario.
  */
-async function resolveAccount(d: Deps, user: { id: string; email: string }): Promise<string | null> {
-  if (d.ownerEmails.length === 0 || d.ownerEmails.includes(user.email.toLowerCase())) return null;
-  if (!d.connectEnabled) throw new HttpError(403, "Los cobros con Stripe están habilitados solo para la cuenta del propietario por ahora");
+export async function resolveAccount(d: Deps, user: { id: string; email: string }): Promise<string | null> {
+  if (d.ownerEmails.length === 0) throw new HttpError(503, "Los cobros no están habilitados: falta configurar STRIPE_OWNER_EMAILS");
+  if (d.ownerEmails.includes(user.email.toLowerCase())) return null;
+  if (!d.connectEnabled) throw new HttpError(403, "Tu usuario no está autorizado para cobrar con Stripe");
   const acct = await d.repo.getAccount(user.id);
   if (!acct || !acct.chargesEnabled) throw new HttpError(409, "Conecta tu cuenta de Stripe para poder cobrar");
   return acct.stripeAccountId;
+}
+
+/** ¿Puede este usuario generar cobros ahora? (para la pantalla; la autorización real se repite al crear). */
+export async function canCharge(d: Deps, user: { id: string; email: string }): Promise<{ allowed: boolean; reason: string | null }> {
+  try {
+    await resolveAccount(d, user);
+    return { allowed: true, reason: null };
+  } catch (e) {
+    if (e instanceof HttpError) return { allowed: false, reason: e.message };
+    throw e;
+  }
 }
 
 export function deriveStatus(s: StripeSession, hint?: "async_failed"): PaymentStatus {

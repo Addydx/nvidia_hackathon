@@ -8,6 +8,8 @@ import type { PublicPayment } from "@/lib/cobros/types";
 type Config = {
   configured: boolean;
   mode: "test" | "live" | null;
+  authorized: boolean;
+  reason: string | null;
   connect: { enabled: boolean; connected: boolean; chargesEnabled: boolean; detailsSubmitted: boolean };
 };
 
@@ -169,17 +171,20 @@ export default function Cobrar() {
       </main>
     );
 
-  const unavailable = config && !config.configured;
+  const unavailable = config && (!config.configured || !config.authorized);
   return (
     <main className="screen">
       <header>
         <h1>Cobrar</h1>
         <p className="muted">Genera un QR y recibe la confirmación del pago aquí mismo.</p>
         {config?.mode === "test" && <p className="badge-test" role="note">Modo prueba: no se cobra dinero real</p>}
+        {config?.mode === "live" && <p className="badge-live" role="note">Cobros reales</p>}
       </header>
 
       {unavailable && (
-        <p className="auth-success" role="status">Los cobros con Stripe aún no están configurados en este servidor.</p>
+        <p className="auth-success" role="status">
+          {!config?.configured ? "Los cobros con Stripe aún no están configurados en este servidor." : config?.reason ?? "Tu usuario no está autorizado para cobrar."}
+        </p>
       )}
 
       {!charge ? (
