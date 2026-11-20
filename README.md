@@ -33,7 +33,7 @@ Las tablas tienen RLS activo y sin políticas: solo el servidor (service role) p
 
 ## Cierre: foto y conteo
 
-El servicio Python vive en [`vision/`](vision/README.md) (`uvicorn app.main:app --port 8000`; necesita `vision/models/best.pt`). Configura `VISION_API_URL=http://127.0.0.1:8000` en `.env.local`.
+El servicio Python vive en [`vision/`](vision/README.md) (`uvicorn app.main:app --port 8000`; necesita `vision/models/monedad.onnx`). Configura `VISION_API_URL=http://127.0.0.1:8000` en `.env.local`.
 
 - Pantalla `/cierre`: «Tomar foto» (cámara) y «Elegir foto», vista previa y «Analizar foto».
 - El navegador envía `multipart/form-data` con el campo `foto` a `POST /api/cierre/analizar`. Esa ruta valida (imagen, máx. 10 MB) y reenvía la foto, también como campo `foto`, a `POST {VISION_API_URL}/contar-monedas`. `VISION_API_URL` solo existe en el servidor.
@@ -52,6 +52,6 @@ Ver el resumen de resultados de validación en la entrega de la fase.
 ## Pendiente
 
 - Validar contra un proyecto Supabase real (ver arriba).
-- Probar `/cierre` con `best.pt` real y una foto de conteo manual conocido y comparar los cuatro conteos.
+- Probar `/cierre` con `monedad.onnx` y una foto de monedas mexicanas de conteo manual conocido y comparar los cuatro conteos.
 - No hay service worker/offline todavía; solo manifest instalable.
 - El diseño de Stitch no se pudo consultar (requiere sesión); se siguió la paleta indicada (carbón, verde lima, rojo).

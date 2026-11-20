@@ -67,3 +67,26 @@ def test_modelo_ausente_en_arranque_real(monkeypatch, tmp_path):
     monkeypatch.setenv("MODEL_PATH", str(tmp_path / "best.pt"))
     detector, error = load_detector()
     assert detector is None and str(tmp_path / "best.pt") in error
+
+
+def test_verificar_clases():
+    from app.model import verificar_clases
+
+    verificar_clases({0: "peso1", 1: "peso 2", 2: "peso5", 3: "peso10"})
+    with pytest.raises(ValueError):
+        verificar_clases({0: "gato", 1: "perro"})
+    with pytest.raises(ValueError):
+        verificar_clases({0: "peso1", 1: "peso2", 2: "peso5"})
+
+
+ONNX = Path(__file__).resolve().parents[1] / "models" / "monedad.onnx"
+
+
+@pytest.mark.skipif(not ONNX.is_file(), reason="monedad.onnx no está en vision/models (los pesos no se versionan)")
+def test_carga_real_del_onnx(monkeypatch):
+    from app.model import load_detector
+
+    monkeypatch.setenv("MODEL_PATH", str(ONNX))
+    detector, error = load_detector()
+    assert error is None and detector.formato == "onnx"
+    assert set(detector.contar(Image.new("RGB", (64, 48), "white"))) == {"1", "2", "5", "10"}

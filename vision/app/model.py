@@ -3,12 +3,12 @@ import os
 import threading
 from pathlib import Path
 
-from .counting import contar
+from .counting import VALORES, contar, normalizar_clase
 
 log = logging.getLogger("vision")
 
-# vision/models/best.pt por defecto; configurable con MODEL_PATH.
-DEFAULT_MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "best.pt"
+# vision/models/monedad.onnx por defecto (también acepta best.pt); configurable con MODEL_PATH.
+DEFAULT_MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "monedad.onnx"
 
 
 def model_path() -> Path:
@@ -19,6 +19,15 @@ class ModelNotAvailable(Exception):
     pass
 
 
+def verificar_clases(names: dict) -> None:
+    """El modelo debe detectar exactamente $1, $2, $5 y $10 (peso1, peso2, peso5, peso10)."""
+    encontradas = {normalizar_clase(n) for n in names.values()}
+    if encontradas != set(VALORES):
+        raise ValueError(
+            f"Las clases del modelo {sorted(names.values())} no corresponden a {sorted(VALORES)}"
+        )
+
+
 class CoinDetector:
     """Envuelve el modelo YOLO de best.pt. La inferencia se serializa con un candado."""
 
@@ -26,7 +35,10 @@ class CoinDetector:
         # Import perezoso: ultralytics/torch son pesados y los tests no los necesitan.
         from ultralytics import YOLO
 
-        self._model = YOLO(str(path))
+        # Ultralytics carga .pt y .onnx con la misma API (el .onnx usa onnxruntime en CPU).
+        self._model = YOLO(str(path), task="detect")
+        self.formato = path.suffix.lower().lstrip(".")
+        verificar_clases(self._model.names)
         self.device, self.imgsz, self.conf = device, imgsz, conf
         self._lock = threading.Lock()
 
