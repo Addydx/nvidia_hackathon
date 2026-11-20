@@ -22,12 +22,13 @@ export async function POST(request: Request) {
     // diferencia) y no se guarda nada: no existe ningún historial compartido entre invitados.
     if (!user) {
       const i = body?.importes;
-      if (!cents(i?.expectedCents) || !cents(i?.countedCents)) {
+      // El efectivo esperado es opcional (sin él el asistente pide indicarlo); el contado es obligatorio.
+      if (!cents(i?.countedCents) || !(i?.expectedCents === null || cents(i?.expectedCents))) {
         throw new HttpError(401, "Inicia sesión para consultar un cierre guardado en tu cuenta.");
       }
       rateLimit(request, "preguntar-invitado", 20);
       const answer = await explicar(
-        { expected_cents: i.expectedCents, counted_cents: i.countedCents, difference_cents: i.countedCents - i.expectedCents },
+        { expected_cents: i.expectedCents, counted_cents: i.countedCents, difference_cents: i.expectedCents === null ? null : i.countedCents - i.expectedCents },
         pregunta,
       );
       return Response.json(answer, { headers: { "Cache-Control": "no-store" } });

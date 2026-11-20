@@ -99,3 +99,34 @@ export async function deleteCaja(repo: CajaRepo, userId: string, input: { sessio
 export async function getLastClosing(repo: CajaRepo, userId: string): Promise<Closing | null> {
   return repo.getLastClosing(userId);
 }
+
+/** Importes de un conteo guardado sin caja: el contado sale solo de las monedas; la diferencia, solo si hay esperado. */
+export function computeCount(coins: Coins, expectedCents: number | null) {
+  const counted = DENOMS.reduce((sum, d) => sum + d * coins[d], 0) * 100;
+  return { countedCents: counted, expectedCents, differenceCents: expectedCents === null ? null : counted - expectedCents };
+}
+
+export async function saveCount(
+  repo: CajaRepo,
+  userId: string,
+  input: { id: unknown; coins: unknown; expectedCents?: unknown },
+): Promise<{ closing: Closing; duplicate: boolean }> {
+  if (typeof input.id !== "string" || !UUID.test(input.id)) throw new HttpError(400, "Identificador de conteo no válido");
+  const coins = parseCoins(input.coins);
+  if (!coins) throw new HttpError(400, "Conteo de monedas no válido");
+  const expected = input.expectedCents ?? null;
+  if (expected !== null && !isCents(expected, 0)) throw new HttpError(400, "Efectivo esperado no válido");
+  return repo.saveCount(userId, { id: input.id, coins, expectedCents: expected });
+}
+
+export async function setExpected(repo: CajaRepo, userId: string, input: { closingId: unknown; expectedCents: unknown }): Promise<Closing> {
+  if (typeof input.closingId !== "string" || !UUID.test(input.closingId)) throw new HttpError(400, "Conteo no válido");
+  if (!isCents(input.expectedCents, 0)) throw new HttpError(400, "Efectivo esperado no válido");
+  const closing = await repo.setExpected(userId, input.closingId, input.expectedCents);
+  if (!closing) throw new HttpError(404, "Conteo no encontrado");
+  return closing;
+}
+
+export async function listHistory(repo: CajaRepo, userId: string, limit = 20): Promise<Closing[]> {
+  return repo.listClosings(userId, Math.min(Math.max(limit, 1), 50));
+}

@@ -5,8 +5,8 @@ export default function GuestBanner() {
   return (
     <aside className="guest-banner" aria-label="Modo invitado">
       <p>
-        Registra ventas en efectivo y haz tu corte de caja. Puedes usar la app sin cuenta. Inicia sesión para guardar tus
-        datos y recuperarlos en otro dispositivo.
+        Cuenta tus monedas y guarda el resultado. Puedes usar la app sin cuenta. Inicia sesión para guardar tus datos y
+        recuperarlos en otro dispositivo.
       </p>
       <div className="guest-actions">
         <Link className="btn primary" href="/acceso">Iniciar sesión</Link>

@@ -17,12 +17,8 @@ export default function Nav() {
   }
 
   if (publica) return null;
-  const item = (href: string, label: string) => (
-    <Link href={href} aria-current={path === href ? "page" : undefined}>{label}</Link>
-  );
   return (
     <>
-      <nav className="tabs" aria-label="Principal">{item("/", "Caja")}{item("/cierre", "Cierre")}</nav>
       {ready && (
         <div className="session-bar">
           {profile.mode === "user" ? (

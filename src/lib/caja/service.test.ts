@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMemoryRepo } from "./memory-repo";
-import { closeCaja, deleteCaja, getLastClosing, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
+import { closeCaja, deleteCaja, getLastClosing, listHistory, saveCount, setExpected, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
 
 let repo: ReturnType<typeof createMemoryRepo>;
 beforeEach(() => { repo = createMemoryRepo(); });
@@ -227,5 +227,65 @@ describe("último cierre por cuenta", () => {
     const cb = await closeCaja(repo, V, { sessionId: b.session.id, coins: { 1: 5, 2: 0, 5: 0, 10: 0 } });
     expect((await getLastClosing(repo, V))?.id).toBe(cb.closing.id);
     expect((await getLastClosing(repo, U))?.id).toBe(ca.closing.id);
+  });
+});
+
+describe("contar monedas sin abrir caja", () => {
+  const C1 = "c0c0c0c0-0000-4000-8000-000000000001", C2 = "c0c0c0c0-0000-4000-8000-000000000002";
+  const COINS = { 1: 2, 2: 5, 5: 1, 10: 1 }; // $27
+
+  it("guarda el conteo sin caja y sin esperado: no hay diferencia", async () => {
+    const { closing, duplicate } = await saveCount(repo, U, { id: C1, coins: COINS });
+    expect(duplicate).toBe(false);
+    expect(closing).toMatchObject({ id: C1, countedCents: 2700, expectedCents: null, differenceCents: null });
+    expect(await getState(repo, U)).toBeNull(); // no abrió ninguna caja
+    expect((await getLastClosing(repo, U))?.id).toBe(C1);
+  });
+
+  it("con esperado calcula la diferencia en el servidor: contado − esperado", async () => {
+    const { closing } = await saveCount(repo, U, { id: C1, coins: COINS, expectedCents: 3000 });
+    expect(closing).toMatchObject({ expectedCents: 3000, countedCents: 2700, differenceCents: -300 });
+  });
+
+  it("el esperado se puede indicar después y recalcula la diferencia", async () => {
+    await saveCount(repo, U, { id: C1, coins: COINS });
+    expect(await setExpected(repo, U, { closingId: C1, expectedCents: 2500 })).toMatchObject({ expectedCents: 2500, differenceCents: 200 });
+    expect(await setExpected(repo, U, { closingId: C1, expectedCents: 2700 })).toMatchObject({ differenceCents: 0 });
+  });
+
+  it("un reintento con el mismo id devuelve el mismo conteo y no lo duplica", async () => {
+    const a = await saveCount(repo, U, { id: C1, coins: COINS });
+    const b = await saveCount(repo, U, { id: C1, coins: { 1: 99, 2: 0, 5: 0, 10: 0 } });
+    expect(b.duplicate).toBe(true);
+    expect(b.closing).toEqual(a.closing);
+    expect(await listHistory(repo, U)).toHaveLength(1);
+  });
+
+  it("el historial va del más reciente al más antiguo y puede convivir con un cierre de caja", async () => {
+    const a = await openCaja(repo, U, 2000);
+    await closeCaja(repo, U, { sessionId: a.session.id, coins: { 1: 20, 2: 0, 5: 0, 10: 0 } });
+    await saveCount(repo, U, { id: C1, coins: COINS });
+    await saveCount(repo, U, { id: C2, coins: { 1: 1, 2: 0, 5: 0, 10: 0 }, expectedCents: 100 });
+    const h = await listHistory(repo, U);
+    expect(h).toHaveLength(3);
+    expect(h.map((c) => c.id).slice(0, 2)).toEqual([C2, C1]);
+  });
+
+  it("cada cuenta ve solo sus conteos y no puede tocar los de la otra", async () => {
+    await saveCount(repo, U, { id: C1, coins: COINS });
+    expect(await listHistory(repo, V)).toEqual([]);
+    expect(await getLastClosing(repo, V)).toBeNull();
+    await expect(setExpected(repo, V, { closingId: C1, expectedCents: 1 })).rejects.toMatchObject({ status: 404 });
+    await expect(saveCount(repo, V, { id: C1, coins: COINS })).rejects.toMatchObject({ status: 409 }); // el id es de otra cuenta
+    expect((await listHistory(repo, U))[0].expectedCents).toBeNull(); // sin cambios
+  });
+
+  it("valida las entradas", async () => {
+    await expect(saveCount(repo, U, { id: "x", coins: COINS })).rejects.toMatchObject({ status: 400 });
+    await expect(saveCount(repo, U, { id: C1, coins: { 1: -1, 2: 0, 5: 0, 10: 0 } })).rejects.toMatchObject({ status: 400 });
+    await expect(saveCount(repo, U, { id: C1, coins: COINS, expectedCents: -5 })).rejects.toMatchObject({ status: 400 });
+    await expect(saveCount(repo, U, { id: C1, coins: COINS, expectedCents: 1.5 })).rejects.toMatchObject({ status: 400 });
+    await expect(setExpected(repo, U, { closingId: C1, expectedCents: "10" })).rejects.toMatchObject({ status: 400 });
+    expect(await listHistory(repo, U)).toEqual([]);
   });
 });

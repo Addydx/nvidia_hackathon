@@ -35,7 +35,15 @@ it("invitado: explica los importes de su pestaña, recalcula la diferencia y no 
   expect(userClient).not.toHaveBeenCalled();
 });
 
-it.each([[{ expectedCents: -1, countedCents: 0 }], [{ expectedCents: 1.5, countedCents: 0 }], [{ expectedCents: "1", countedCents: 0 }], [null]])(
+it("invitado: sin efectivo esperado el asistente pide indicarlo y no inventa una diferencia", async () => {
+  vi.mocked(getUser).mockResolvedValue(null);
+  vi.stubEnv("CIERRE_CHAT_URL", "");
+  const res = await POST(guest({ expectedCents: null, countedCents: 2700 }, "¿Cuadró?"));
+  expect(res.status).toBe(200);
+  expect(await res.json()).toMatchObject({ origen: "resumen", respuesta: expect.stringContaining("Necesito el efectivo esperado") });
+});
+
+it.each([[{ expectedCents: -1, countedCents: 0 }], [{ expectedCents: 1.5, countedCents: 0 }], [{ expectedCents: "1", countedCents: 0 }], [{ expectedCents: null, countedCents: null }], [null]])(
   "invitado: rechaza importes no válidos %j", async (importes) => {
     vi.mocked(getUser).mockResolvedValue(null);
     expect((await POST(guest(importes))).status).toBe(401);

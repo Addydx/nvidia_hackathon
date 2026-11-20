@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createLocalRepo, type KV } from "./local-repo";
-import { closeCaja, deleteCaja, getLastClosing, getState, openCaja, registerSale } from "./service";
+import { closeCaja, deleteCaja, getLastClosing, getState, listHistory, openCaja, registerSale, saveCount, setExpected } from "./service";
 
 const fakeStorage = (): KV & { data: Map<string, string> } => {
   const data = new Map<string, string>();
@@ -55,5 +55,24 @@ describe("caja de invitado (sessionStorage de la pestaña)", () => {
     expect(await getState(repo, G)).toBeNull();
     expect((await openCaja(repo, G, 100)).expectedCents).toBe(100);
     expect([...tab.data.keys()]).toEqual(["cc.guest.v1"]); // nada más se escribe en el almacenamiento
+  });
+
+  it("contar sin caja: el conteo del invitado sobrevive a una recarga y no sale de su pestaña", async () => {
+    const id = "c0c0c0c0-0000-4000-8000-000000000001";
+    await saveCount(createLocalRepo(tab), G, { id, coins: { 1: 3, 2: 1, 5: 0, 10: 1 } }); // $15
+    const recargado = await listHistory(createLocalRepo(tab), G); // «recarga»: nueva instancia, mismo sessionStorage
+    expect(recargado).toHaveLength(1);
+    expect(recargado[0]).toMatchObject({ id, countedCents: 1500, expectedCents: null, differenceCents: null });
+    expect(await getState(createLocalRepo(tab), G)).toBeNull(); // no abrió caja
+    expect(await listHistory(createLocalRepo(fakeStorage()), G)).toEqual([]); // otra pestaña: vacía
+  });
+
+  it("contar sin caja: indicar el esperado después calcula la diferencia y se conserva", async () => {
+    const id = "c0c0c0c0-0000-4000-8000-000000000002";
+    const repo = createLocalRepo(tab);
+    await saveCount(repo, G, { id, coins: { 1: 2, 2: 5, 5: 1, 10: 1 } });
+    expect(await setExpected(repo, G, { closingId: id, expectedCents: 3000 })).toMatchObject({ differenceCents: -300 });
+    expect((await listHistory(createLocalRepo(tab), G))[0]).toMatchObject({ expectedCents: 3000, differenceCents: -300 });
+    expect((await saveCount(repo, G, { id, coins: { 1: 9, 2: 9, 5: 9, 10: 9 } })).duplicate).toBe(true); // reintento: mismo conteo
   });
 });

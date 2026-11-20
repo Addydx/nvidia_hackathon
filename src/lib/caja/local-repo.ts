@@ -1,4 +1,4 @@
-import { HttpError, computeClosing } from "./service";
+import { HttpError, computeClosing, computeCount } from "./service";
 import type { CajaRepo, CashSession, Closing, Coins, Sale } from "./types";
 
 /** Almacenamiento mínimo (sessionStorage en el navegador; un objeto en las pruebas). */
@@ -75,8 +75,30 @@ export function createLocalRepo(storage: KV, key = "cc.guest.v1"): CajaRepo {
       save(d);
       return { deletedSales: before - d.sales.length };
     },
+    async saveCount(_u, input: { id: string; coins: Coins; expectedCents: number | null }) {
+      const d = load();
+      const done = d.closings.find((c) => c.id === input.id);
+      if (done) return { closing: done, duplicate: true };
+      const s: CashSession = { id: uuid(), openingCents: 0, openedAt: new Date().toISOString() };
+      d.sessions.push(s); // sesión ya cerrada: no figura como caja abierta
+      const closing: Closing = { id: input.id, sessionId: s.id, coins: { ...input.coins }, ...computeCount(input.coins, input.expectedCents), closedAt: new Date().toISOString() };
+      d.closings.push(closing);
+      save(d);
+      return { closing, duplicate: false };
+    },
+    async setExpected(_u, closingId: string, expectedCents: number) {
+      const d = load();
+      const i = d.closings.findIndex((c) => c.id === closingId);
+      if (i < 0) return null;
+      d.closings[i] = { ...d.closings[i], expectedCents, differenceCents: d.closings[i].countedCents - expectedCents };
+      save(d);
+      return d.closings[i];
+    },
+    async listClosings(_u, limit: number) {
+      return [...load().closings].reverse().sort((a, b) => b.closedAt.localeCompare(a.closedAt)).slice(0, limit); // en empate, el último guardado primero
+    },
     async getLastClosing() {
-      const c = [...load().closings].sort((a, b) => b.closedAt.localeCompare(a.closedAt));
+      const c = [...load().closings].reverse().sort((a, b) => b.closedAt.localeCompare(a.closedAt));
       return c[0] ?? null;
     },
     async getSale(_u, id) {

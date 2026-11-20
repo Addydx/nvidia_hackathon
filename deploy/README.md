@@ -38,7 +38,10 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
 1. **Migraciones**, en orden (SQL Editor de Supabase, o `supabase db push`), si aún no están aplicadas:
    `20261119000000_caja.sql`, `20261120000000_cierre.sql`, `20261121000000_eliminar_caja.sql` y **`20261122000000_cuentas.sql`**
    (añade `cash_sessions.user_id`, una caja abierta por usuario y funciones que reciben el usuario) y, a continuación, **`20261123000000_perfiles_y_memoria.sql`**
-   (tabla `assistant_messages` con la memoria del asistente por cuenta y políticas RLS: cada cuenta solo ve y escribe lo suyo).
+   (tabla `assistant_messages` con la memoria del asistente por cuenta y políticas RLS: cada cuenta solo ve y escribe lo suyo) y, por último,
+   **`20261124000000_conteos.sql`** (guardar un conteo sin abrir caja: efectivo esperado opcional y las funciones `save_count` y
+   `set_count_expected`; conserva todos los registros existentes). Sin esta migración los invitados funcionan igual, pero guardar en
+   una cuenta responde «falta una migración en la base».
    Las cajas anteriores quedan sin dueño (`user_id` nulo) y ningún usuario las ve; el SQL para asignarlas está al final de la migración.
 2. **Clave pública:** Project Settings → API → *anon / publishable key*. Se añade al Secret como `SUPABASE_ANON_KEY`
    (`deploy/create-secrets.sh` la pide en un prompt oculto). No es la service role.

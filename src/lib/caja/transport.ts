@@ -1,5 +1,5 @@
 import { createLocalRepo } from "./local-repo";
-import { closeCaja, deleteCaja, getLastClosing, getState, HttpError, openCaja, registerSale } from "./service";
+import { closeCaja, deleteCaja, getLastClosing, getState, HttpError, listHistory, openCaja, registerSale, saveCount, setExpected } from "./service";
 
 export type Profile = { mode: "guest" } | { mode: "user"; id: string; email: string };
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; error: string };
@@ -56,6 +56,14 @@ function guestApi(): Api {
           const { closing, duplicate } = await closeCaja(repo, GUEST, { sessionId: body.sessionId, coins: body.coins });
           return { ok: true, data: { closing, duplicate } as never };
         }
+        case "GET /api/conteos":
+          return { ok: true, data: { closings: await listHistory(repo, GUEST) } as never };
+        case "POST /api/conteos": {
+          const { closing, duplicate } = await saveCount(repo, GUEST, { id: body.id, coins: body.coins, expectedCents: body.expectedCents });
+          return { ok: true, data: { closing, duplicate } as never };
+        }
+        case "POST /api/conteos/esperado":
+          return { ok: true, data: { closing: await setExpected(repo, GUEST, { closingId: body.closingId, expectedCents: body.expectedCents }) } as never };
         case "GET /api/cierre/ultimo":
           return { ok: true, data: { closing: await getLastClosing(repo, GUEST) } as never };
         default:

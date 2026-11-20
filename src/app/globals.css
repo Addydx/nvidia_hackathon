@@ -95,3 +95,9 @@ label, .label { display: block; color: var(--muted); font-size: .9rem; margin-bo
 .history li { border-top: 1px solid var(--line); padding-top: 10px; }
 .history .q { color: var(--muted); margin: 0 0 4px; font-size: .95rem; }
 .history .a { margin: 0; line-height: 1.4; }
+
+/* Contar monedas primero */
+.photo-stack { display: grid; gap: 12px; }
+.btn.big { min-height: 76px; font-size: 1.4rem; }
+.late-expected { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.late-expected .btn { margin-top: 8px; }
