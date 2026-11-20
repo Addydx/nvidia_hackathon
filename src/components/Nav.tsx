@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useProfile } from "./ProfileProvider";
 
-const PUBLICAS = ["/acceso", "/registro", "/recuperar", "/cambiar-contrasena"];
+const PUBLICAS = ["/acceso", "/registro", "/recuperar", "/cambiar-contrasena", "/pago/gracias", "/pago/cancelado"];
 
 export default function Nav() {
   const path = usePathname();

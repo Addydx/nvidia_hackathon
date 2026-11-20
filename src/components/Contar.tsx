@@ -6,6 +6,7 @@ import type { Closing } from "@/lib/caja/types";
 import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount, type Denomination } from "@/lib/vision";
 import type { Conteo } from "@/lib/monedas-asistente";
 import GuestBanner from "./GuestBanner";
+import CobrarCta from "./CobrarCta";
 import AsistenteMonedas from "./AsistenteMonedas";
 import { useProfile } from "./ProfileProvider";
 
@@ -236,6 +237,8 @@ export default function Contar() {
           <AsistenteMonedas key={last.id} conteo={last.coins as Conteo} closingId={last.id} />
         </>
       )}
+
+      <CobrarCta />
 
       {older.length > 0 && (
         <details className="historial">
