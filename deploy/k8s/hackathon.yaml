@@ -70,8 +70,9 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: VISION_API_URL, value: "http://vision:8000" }
+            - { name: APP_URL, value: "https://nvidia.addydx.com" } # enlaces de los correos de Auth
           envFrom:
-            - secretRef: { name: hackathon-env } # SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+            - secretRef: { name: hackathon-env } # SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
           readinessProbe:
             httpGet: { path: /cierre, port: http }
             initialDelaySeconds: 5

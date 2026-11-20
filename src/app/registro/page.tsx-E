@@ -1,0 +1,32 @@
+"use client";
+
+import AuthForm, { postJson } from "@/components/AuthForm";
+
+export default function Registro() {
+  return (
+    <AuthForm
+      title="Crea tu cuenta"
+      subtitle="Cada cuenta tiene su propia caja."
+      submit="Crear cuenta"
+      busy="Creando…"
+      success="Listo. Te enviamos un correo para confirmar tu cuenta. Ábrelo y toca el enlace; después inicia sesión."
+      fields={[
+        { name: "email", label: "Correo", type: "email", autoComplete: "email" },
+        { name: "password", label: "Contraseña (mínimo 8 caracteres)", type: "password", autoComplete: "new-password" },
+        { name: "confirm", label: "Repite la contraseña", type: "password", autoComplete: "new-password" },
+      ]}
+      onSubmit={async (v) => {
+        if ((v.password ?? "").length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+        if (v.password !== v.confirm) return "Las contraseñas no coinciden.";
+        const r = await postJson("/api/auth/registro", { email: v.email ?? "", password: v.password });
+        if (!r.ok) return r.error ?? "No se pudo crear la cuenta.";
+        if (r.data?.entered) {
+          window.location.href = ("/");
+          return null;
+        }
+        return null;
+      }}
+      links={[{ href: "/acceso", label: "Ya tengo cuenta" }]}
+    />
+  );
+}

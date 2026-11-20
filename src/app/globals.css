@@ -58,3 +58,26 @@ label, .label { display: block; color: var(--muted); font-size: .9rem; margin-bo
 .total .label { margin: 0; font-size: 1.1rem; }
 .total strong { font-size: 2.25rem; color: var(--lime); }
 .coins strong { font-size: 2rem; color: var(--lime); }
+
+/* Cuentas: pantallas de acceso (degradado sutil sobre el mismo carbón) y barra de sesión */
+.auth-bg { min-height: 100dvh; display: grid; align-items: start; justify-items: center; padding: 8dvh 16px 32px;
+  background: radial-gradient(120% 60% at 50% -10%, rgba(163, 230, 53, .16), transparent 60%), linear-gradient(180deg, #1c1d1f 0%, #202316 100%); }
+.auth-card { width: 100%; max-width: 420px; display: grid; gap: 16px; background: rgba(38, 40, 43, .72); border: 1px solid var(--line);
+  border-radius: 20px; padding: 24px 20px; backdrop-filter: blur(6px); }
+.auth-brand { margin: 0 0 4px; color: var(--lime); font-weight: 700; letter-spacing: .04em; font-size: .85rem; text-transform: uppercase; }
+.auth-field { margin-bottom: 12px; }
+.auth-field input { width: 100%; background: var(--bg); border: 2px solid var(--line); border-radius: 12px; color: var(--text); font-size: 1.1rem; padding: 14px; }
+.auth-field input:focus { outline: 0; border-color: var(--lime); }
+.auth-field input[aria-invalid="true"] { border-color: var(--red); }
+.auth-show { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .95rem; margin: 0 0 4px; }
+.auth-show input { width: 20px; height: 20px; accent-color: var(--lime); }
+.auth-links { display: grid; gap: 4px; justify-items: center; }
+.auth-links a { color: var(--muted); padding: 10px; text-decoration: underline; text-underline-offset: 3px; }
+.auth-links a:hover, .auth-links a:focus-visible { color: var(--lime); outline: 0; }
+.auth-success { background: rgba(163, 230, 53, .1); border: 1px solid var(--lime); border-radius: 12px; padding: 14px; margin: 0; line-height: 1.4; }
+.session-bar { max-width: 480px; margin: 0 auto; padding: 6px 16px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--muted); font-size: .85rem; }
+.session-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-bar button { background: none; border: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: .85rem; cursor: pointer; padding: 8px 0; }
+.session-bar button:hover, .session-bar button:focus-visible { color: var(--lime); outline: 0; }
+.btn-quiet { background: none; border: 0; color: var(--muted); font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 12px; justify-self: center; }
+.btn-quiet:hover, .btn-quiet:focus-visible { color: var(--text); outline: 0; }

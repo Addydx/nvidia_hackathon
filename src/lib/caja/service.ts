@@ -15,22 +15,23 @@ export function expectedCents(openingCents: number, sales: Sale[]): number {
   return sales.reduce((sum, s) => sum + s.amountCents, openingCents);
 }
 
-export async function getState(repo: CajaRepo): Promise<CajaState | null> {
-  const session = await repo.getOpenSession();
+export async function getState(repo: CajaRepo, userId: string): Promise<CajaState | null> {
+  const session = await repo.getOpenSession(userId);
   if (!session) return null;
-  const sales = await repo.listSales(session.id);
+  const sales = await repo.listSales(userId, session.id);
   return { session, sales, expectedCents: expectedCents(session.openingCents, sales) };
 }
 
-export async function openCaja(repo: CajaRepo, openingCents: unknown): Promise<CajaState> {
+export async function openCaja(repo: CajaRepo, userId: string, openingCents: unknown): Promise<CajaState> {
   if (!isCents(openingCents, 0)) throw new HttpError(400, "Importe inicial no válido");
-  const session = await repo.createSession(openingCents);
+  const session = await repo.createSession(userId, openingCents);
   if (!session) throw new HttpError(409, "Ya hay una caja abierta");
   return { session, sales: [], expectedCents: openingCents };
 }
 
 export async function registerSale(
   repo: CajaRepo,
+  userId: string,
   input: { id: unknown; sessionId: unknown; amountCents: unknown },
 ): Promise<{ sale: Sale; duplicate: boolean; state: CajaState }> {
   const { id, sessionId, amountCents } = input;
@@ -38,16 +39,16 @@ export async function registerSale(
   if (typeof sessionId !== "string" || !UUID.test(sessionId)) throw new HttpError(400, "Caja no válida");
   if (!isCents(amountCents, 1)) throw new HttpError(400, "Importe de venta no válido");
 
-  const existing = await repo.getSale(id);
+  const existing = await repo.getSale(userId, id);
   if (existing && (existing.sessionId !== sessionId || existing.amountCents !== amountCents)) {
     throw new HttpError(409, "Este identificador ya se usó con otra venta");
   }
   if (!existing) {
-    const open = await repo.getOpenSession();
+    const open = await repo.getOpenSession(userId);
     if (!open || open.id !== sessionId) throw new HttpError(409, "La caja no está abierta");
   }
-  const result = await repo.insertSaleOnce({ id, sessionId, amountCents });
-  const state = await getState(repo);
+  const result = await repo.insertSaleOnce(userId, { id, sessionId, amountCents });
+  const state = await getState(repo, userId);
   if (!state) throw new HttpError(409, "La caja no está abierta");
   return { ...result, state };
 }
@@ -77,19 +78,20 @@ export function computeClosing(openingCents: number, sales: Sale[], coins: Coins
 
 export async function closeCaja(
   repo: CajaRepo,
+  userId: string,
   input: { sessionId: unknown; coins: unknown },
 ): Promise<{ closing: Closing; duplicate: boolean }> {
   if (typeof input.sessionId !== "string" || !UUID.test(input.sessionId)) throw new HttpError(400, "Caja no válida");
   const coins = parseCoins(input.coins);
   if (!coins) throw new HttpError(400, "Conteo de monedas no válido");
-  const result = await repo.closeSession(input.sessionId, coins);
+  const result = await repo.closeSession(userId, input.sessionId, coins);
   if (!result) throw new HttpError(404, "Caja no encontrada");
   return result;
 }
 
-export async function deleteCaja(repo: CajaRepo, input: { sessionId: unknown }): Promise<{ deletedSales: number }> {
+export async function deleteCaja(repo: CajaRepo, userId: string, input: { sessionId: unknown }): Promise<{ deletedSales: number }> {
   if (typeof input.sessionId !== "string" || !UUID.test(input.sessionId)) throw new HttpError(400, "Caja no válida");
-  const result = await repo.deleteOpenSession(input.sessionId);
+  const result = await repo.deleteOpenSession(userId, input.sessionId);
   if (!result) throw new HttpError(404, "Caja no encontrada");
   return result;
 }
