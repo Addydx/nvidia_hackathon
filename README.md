@@ -12,6 +12,7 @@ PWA para vendedores ambulantes. Hoy incluye **Caja** (abrir caja, ventas en efec
 | [`Docs/04_arquitectura.md`](Docs/04_arquitectura.md) | Next.js, Supabase, ONNX, FastAPI, Qwen y NVIDIA |
 | [`Docs/05_componentes_licencias.md`](Docs/05_componentes_licencias.md) | Componentes, herramientas de IA, fuentes y licencias |
 | [`Docs/06_funcionalidades.md`](Docs/06_funcionalidades.md) | Funciones implementadas, simuladas, pendientes y limitaciones |
+| [`Docs/07_hci_interfaz.md`](Docs/07_hci_interfaz.md) | Interfaz, HCI, criterios de aceptación y pruebas (Word y PDF en `Docs/entregables/`) |
 
 Versiones Word: [`VendIA_Documentacion_Tecnica.docx`](Docs/entregables/VendIA_Documentacion_Tecnica.docx) y [`VendIA_Entrenamiento_y_Estado.docx`](Docs/entregables/VendIA_Entrenamiento_y_Estado.docx).
 Cuaderno del chatbot (corte-lora): [`asistente/corte.ipynb`](asistente/corte.ipynb). El adaptador final `vendia-monedas-lora` se entrenó con los scripts de [`asistente/vendia-monedas/`](asistente/vendia-monedas/README.md).
