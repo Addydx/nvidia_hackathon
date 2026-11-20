@@ -1,5 +1,6 @@
 # Corte de caja · namespace exclusivo "hackathon". No toca otros namespaces (AlePay, addydx).
-# Aplicar:  export TAG=sha-<commit>;  envsubst '$TAG' < deploy/k8s/hackathon.yaml | kubectl apply -f -
+# Aplicar:  export WEB_TAG=sha-<commit> VISION_TAG=sha-<commit>;
+#           envsubst '$WEB_TAG $VISION_TAG' < deploy/k8s/hackathon.yaml | kubectl apply -f -
 # El namespace lo crea deploy/admin-setup.sh. Requiere antes (ver deploy/README.md): Secret "hackathon-env" y Secret "ghcr-pull" en el namespace.
 # Python: solo recibe tráfico de Next.js. Modelo en solo lectura desde el host.
 apiVersion: apps/v1
@@ -17,7 +18,7 @@ spec:
       securityContext: { runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, seccompProfile: { type: RuntimeDefault } }
       containers:
         - name: vision
-          image: ghcr.io/addydx/nvidia-hackathon-vision:${TAG}
+          image: ghcr.io/addydx/nvidia-hackathon-vision:${VISION_TAG}
           ports: [{ name: http, containerPort: 8000 }]
           env:
             - { name: MODEL_PATH, value: /models/monedad.onnx }
@@ -66,7 +67,7 @@ spec:
       securityContext: { runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, seccompProfile: { type: RuntimeDefault } }
       containers:
         - name: web
-          image: ghcr.io/addydx/nvidia-hackathon-web:${TAG}
+          image: ghcr.io/addydx/nvidia-hackathon-web:${WEB_TAG}
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: VISION_API_URL, value: "http://vision:8000" }

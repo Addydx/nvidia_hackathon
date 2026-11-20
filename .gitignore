@@ -42,3 +42,4 @@ next-env.d.ts
 
 # permitir plantilla de variables
 !.env.example
+.cutover-previous-image
