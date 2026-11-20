@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import CobrarCta from "@/components/CobrarCta";
 import { describeDifference, formatCents } from "@/lib/money";
 import type { CajaState, Closing } from "@/lib/caja/types";
 import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount, type Denomination } from "@/lib/vision";
@@ -173,6 +174,7 @@ export default function Cierre() {
           <p className="muted" data-testid="closed-difference-cents">Diferencia: {closing.differenceCents} centavos</p>
         </section>
         <Link className="btn secondary file-btn" href="/">Abrir otra caja</Link>
+        <CobrarCta />
       </main>
     );
   }
@@ -183,6 +185,7 @@ export default function Cierre() {
         <h1>Cierre</h1>
         <p className="muted">No hay una caja abierta. Abre una caja para poder cerrarla.</p>
         <Link className="btn primary file-btn" href="/">Ir a Caja</Link>
+        <CobrarCta />
       </main>
     );
 
@@ -261,6 +264,8 @@ export default function Cierre() {
       <button className="btn primary" disabled={!valid || saving || analyzing} onClick={() => void confirmar()}>
         {saving ? "Confirmando…" : confirmError ? "Reintentar cierre" : "Confirmar cierre"}
       </button>
+
+      <CobrarCta />
     </main>
   );
 }

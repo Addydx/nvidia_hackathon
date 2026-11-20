@@ -48,6 +48,29 @@ la versión nueva no puede leer las cajas ni iniciar sesión.
    correos a cualquier persona, configura un SMTP propio en Auth → SMTP Settings (Resend, Postmark, etc.).
 6. Solo entonces, desplegar (paso 2). `APP_URL` ya viene en el manifiesto.
 
+## 1c. Cobros con Stripe
+
+Código: `src/lib/cobros`, rutas `/api/cobros`, `/api/stripe/webhook` y `/api/stripe/connect`, pantalla `/cobrar`.
+
+1. **Migración** `supabase/migrations/20261123000000_cobros.sql` (aditiva: tablas `payments`, `stripe_events`, `stripe_accounts`
+   y la función `apply_payment_status`). Se aplica **antes** de desplegar la imagen; no afecta a la versión anterior de la app.
+   Recuperación: `supabase/rollback/20261123000000_cobros_down.sql` (borra los registros de cobros).
+2. **Claves en el Secret** (nunca por chat ni Git): `bash ~/hackathon/set-stripe-keys.sh` en server-home
+   (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` y, opcional, `STRIPE_OWNER_EMAILS`). Luego `rollout restart deploy/web`.
+3. **Stripe Dashboard → Developers → Webhooks → Add endpoint**
+   - URL: `https://nvidia.addydx.com/api/stripe/webhook`
+   - Eventos: `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+     `checkout.session.async_payment_failed`, `checkout.session.expired`.
+   - El *Signing secret* (`whsec_…`) es `STRIPE_WEBHOOK_SECRET`. Crea el endpoint en modo prueba y, aparte, en modo real.
+4. **Cloudflare Access (importante):** el webhook y las páginas que ve el cliente deben ser alcanzables sin iniciar sesión.
+   En Zero Trust → Access → Applications añade una política **Bypass** para las rutas
+   `nvidia.addydx.com/api/stripe/webhook` y `nvidia.addydx.com/pago/*`. Sin ella Stripe recibe la pantalla de Access y
+   el webhook falla (el cobro igualmente se concilia por consulta al abrir la pantalla, pero más lento). No hagas Bypass de nada más.
+5. **Stripe Connect** (opcional, deshabilitado por defecto): activa Connect en el Dashboard, completa el perfil de la
+   plataforma, crea un segundo endpoint de webhook en modo «cuentas conectadas» con el evento `account.updated` y los cuatro
+   `checkout.session.*`, guarda su secreto como `STRIPE_CONNECT_WEBHOOK_SECRET` y pon `STRIPE_CONNECT_ENABLED=true`.
+   Con Connect activo y `STRIPE_OWNER_EMAILS` definido, solo esos correos cobran en tu cuenta; los demás cobran en la suya.
+
 ## 2. Desplegar
 
 ```bash

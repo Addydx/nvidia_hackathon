@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const PUBLICAS = ["/acceso", "/registro", "/recuperar", "/cambiar-contrasena"];
+const PUBLICAS = ["/acceso", "/registro", "/recuperar", "/cambiar-contrasena", "/pago/gracias", "/pago/cancelado"];
 
 export default function Nav() {
   const path = usePathname();
@@ -32,7 +32,7 @@ export default function Nav() {
   );
   return (
     <>
-      <nav className="tabs" aria-label="Principal">{item("/", "Caja")}{item("/cierre", "Cierre")}</nav>
+      <nav className="tabs" aria-label="Principal">{item("/", "Caja")}{item("/cierre", "Cierre")}{item("/cobrar", "Cobrar")}</nav>
       {email && (
         <div className="session-bar">
           <span title={email}>{email}</span>
