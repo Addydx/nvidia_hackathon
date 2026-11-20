@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { describeDifference, formatCents, parsePesosToCents } from "@/lib/money";
 import type { Closing } from "@/lib/caja/types";
 import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount, type Denomination } from "@/lib/vision";
+import type { Conteo } from "@/lib/monedas-asistente";
 import GuestBanner from "./GuestBanner";
-import PreguntarCierre from "./PreguntarCierre";
+import AsistenteMonedas from "./AsistenteMonedas";
 import { useProfile } from "./ProfileProvider";
 
 const emptyCounts = (): Record<Denomination, string> => ({ 1: "0", 2: "0", 5: "0", 10: "0" });
@@ -28,6 +29,8 @@ export default function Contar() {
   const run = useRef<AbortController | null>(null);
 
   const [editing, setEditing] = useState(false);
+  const [original, setOriginal] = useState<CoinCount | null>(null); // lo que leyó la foto (para saber si el usuario corrigió)
+  const [fotoId, setFotoId] = useState(0); // una foto nueva reinicia el asistente: no se mezclan resultados
   const [edit, setEdit] = useState<Record<Denomination, string>>(emptyCounts);
   const [expectedInput, setExpectedInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -78,6 +81,8 @@ export default function Contar() {
         const c = data.conteo as CoinCount;
         // la lectura de la foto es solo una propuesta: el usuario la revisa y corrige
         setEdit({ 1: String(c[1]), 2: String(c[2]), 5: String(c[5]), 10: String(c[10]) });
+        setOriginal(c);
+        setFotoId((n) => n + 1);
         setEditing(true);
         setSaveError(null);
         saveId.current = null;
@@ -97,12 +102,16 @@ export default function Contar() {
     if (!f.type.startsWith("image/")) return setError("Elige un archivo de imagen.");
     if (f.size > MAX_PHOTO_BYTES) return setError("La foto pesa más de 10 MB. Toma o elige otra.");
     setFoto(f);
+    setOriginal(null);
+    setEditing(false); // el resultado anterior se oculta hasta que llegue el de la foto nueva
     void analizar(f); // el análisis empieza en cuanto se elige la foto
   }
 
   const parsed = DENOMINATIONS.map((d) => parseCount(edit[d]));
   const valid = parsed.every((n) => n !== null);
   const totalCents = valid ? DENOMINATIONS.reduce((sum, d, i) => sum + d * (parsed[i] as number), 0) * 100 : 0;
+  const conteoVivo: Conteo | null = valid ? ({ 1: parsed[0] as number, 2: parsed[1] as number, 5: parsed[2] as number, 10: parsed[3] as number }) : null;
+  const corregido = !!original && valid && DENOMINATIONS.some((m, i) => (parsed[i] as number) !== original[m]);
   const expectedCents = expectedInput.trim() === "" ? null : parsePesosToCents(expectedInput);
   const expectedInvalid = expectedInput.trim() !== "" && expectedCents === null;
   const diff = valid && expectedCents !== null ? describeDifference(totalCents - expectedCents) : null;
@@ -121,6 +130,7 @@ export default function Contar() {
     setHistory((h) => [r.data.closing, ...h.filter((c) => c.id !== r.data.closing.id)]);
     saveId.current = null;
     setEditing(false);
+    setOriginal(null);
     setEdit(emptyCounts());
     setExpectedInput("");
     setFoto(null);
@@ -216,6 +226,8 @@ export default function Contar() {
         </section>
       )}
 
+      {editing && conteoVivo && <AsistenteMonedas key={`vivo-${fotoId}`} conteo={conteoVivo} corregido={corregido} />}
+
       {ready && profile.mode === "guest" && <GuestBanner />}
       {loadError && <p className="error" role="alert">{loadError}</p>}
 
@@ -262,7 +274,7 @@ export default function Contar() {
         </section>
       )}
 
-      {last && <PreguntarCierre key={last.id} closing={last} />}
+      {last && <AsistenteMonedas key={last.id} conteo={last.coins as Conteo} closingId={last.id} />}
 
       {older.length > 0 && (
         <section aria-label="Historial">

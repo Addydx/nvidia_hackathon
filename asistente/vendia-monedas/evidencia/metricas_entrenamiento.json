@@ -1,0 +1,1 @@
+{"gpu":"Tesla T4","perdida_validacion_base":1.0926404871157747,"perdida_validacion_por_epoca":[0.04311629176444094,0.018359887048458853,0.015430449126933116],"pasos":240,"segundos_entrenamiento":225.0,"perdida_validacion_final":0.015430449126933116,"parametros_entrenables":4358144,"pico_memoria_gpu_gb":13.84}
