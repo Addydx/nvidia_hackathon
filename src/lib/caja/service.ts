@@ -86,3 +86,10 @@ export async function closeCaja(
   if (!result) throw new HttpError(404, "Caja no encontrada");
   return result;
 }
+
+export async function deleteCaja(repo: CajaRepo, input: { sessionId: unknown }): Promise<{ deletedSales: number }> {
+  if (typeof input.sessionId !== "string" || !UUID.test(input.sessionId)) throw new HttpError(400, "Caja no válida");
+  const result = await repo.deleteOpenSession(input.sessionId);
+  if (!result) throw new HttpError(404, "Caja no encontrada");
+  return result;
+}

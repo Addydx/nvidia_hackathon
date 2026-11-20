@@ -42,6 +42,20 @@ export function createMemoryRepo(): CajaRepo & { failNextSaleInserts: number } {
       session = null;
       return { closing, duplicate: false };
     },
+    async deleteOpenSession(sessionId: string) {
+      if (!known.has(sessionId)) return null;
+      if (session?.id !== sessionId) throw new HttpError(409, "La caja ya está cerrada");
+      let deletedSales = 0;
+      for (const [id, sale] of sales) {
+        if (sale.sessionId === sessionId) {
+          sales.delete(id);
+          deletedSales++;
+        }
+      }
+      known.delete(sessionId);
+      session = null;
+      return { deletedSales };
+    },
     async getSale(id: string) {
       return sales.get(id) ?? null;
     },

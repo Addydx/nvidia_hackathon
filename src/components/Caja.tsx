@@ -52,6 +52,9 @@ export default function Caja() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const inFlight = useRef(false);
 
   const load = useCallback(async () => {
@@ -128,6 +131,26 @@ export default function Caja() {
     writePending(null);
     setPending(null);
     setSaleInput("");
+  }
+
+  async function eliminar() {
+    if (!state || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const r = await api<{ deletedSales: number }>("/api/caja/eliminar", {
+      method: "POST",
+      body: JSON.stringify({ sessionId: state.session.id }),
+    });
+    setDeleting(false);
+    // 404: la caja ya no existe (borrada antes); el resultado es el mismo.
+    if (!r.ok && r.status !== 404) return setDeleteError(r.error);
+    writePending(null);
+    setPending(null);
+    setSaleInput("");
+    setNotice(null);
+    setFormError(null);
+    setConfirmingDelete(false);
+    setState(null); // vuelve a la pantalla de abrir caja
   }
 
   if (loading) return <main className="screen"><p className="muted" role="status">Cargando caja…</p></main>;
@@ -212,6 +235,25 @@ export default function Caja() {
           </ul>
         )}
       </section>
+
+      {confirmingDelete ? (
+        <section className="pending failed" aria-label="Confirmar eliminación" role="alertdialog" aria-labelledby="del-title">
+          <p id="del-title" className="label">¿Eliminar la caja abierta?</p>
+          <strong data-testid="delete-count">
+            Se borrarán {sales.length} {sales.length === 1 ? "venta" : "ventas"} y la apertura.
+          </strong>
+          <p className="muted">Esta acción no se puede deshacer.</p>
+          <p className="error" role="alert">{deleteError}</p>
+          <button className="btn primary" onClick={() => void eliminar()} disabled={deleting}>
+            {deleting ? "Eliminando…" : "Sí, eliminar"}
+          </button>
+          <button className="btn secondary" onClick={() => { setConfirmingDelete(false); setDeleteError(null); }} disabled={deleting}>
+            Cancelar
+          </button>
+        </section>
+      ) : (
+        <button className="btn secondary" onClick={() => setConfirmingDelete(true)}>Eliminar caja abierta</button>
+      )}
     </main>
   );
 }

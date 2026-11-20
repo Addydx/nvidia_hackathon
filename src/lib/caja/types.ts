@@ -41,6 +41,11 @@ export interface CajaRepo {
    * Lanza HttpError 409 si la caja ya estaba cerrada sin cierre registrado.
    */
   closeSession(sessionId: string, coins: Coins): Promise<{ closing: Closing; duplicate: boolean } | null>;
+  /**
+   * Borra la caja abierta y sus ventas en una sola transacción. Null si la caja no existe.
+   * Lanza HttpError 409 si la caja ya está cerrada.
+   */
+  deleteOpenSession(sessionId: string): Promise<{ deletedSales: number } | null>;
   getSale(id: string): Promise<Sale | null>;
   /** Inserta si el id no existe; si existe no hace nada. Devuelve la venta almacenada y si ya existía. */
   insertSaleOnce(sale: { id: string; sessionId: string; amountCents: number }): Promise<{ sale: Sale; duplicate: boolean }>;

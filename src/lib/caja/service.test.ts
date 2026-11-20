@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMemoryRepo } from "./memory-repo";
-import { closeCaja, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
+import { closeCaja, deleteCaja, computeClosing, getState, HttpError, openCaja, parseCoins, registerSale } from "./service";
 
 let repo: ReturnType<typeof createMemoryRepo>;
 beforeEach(() => { repo = createMemoryRepo(); });
@@ -111,5 +111,37 @@ describe("cierre de caja", () => {
     expect(parseCoins({ 1: 1, 2: 2, 5: 3, 10: 4 })).toEqual({ 1: 1, 2: 2, 5: 3, 10: 4 });
     expect(parseCoins({ 1: 100000, 2: 0, 5: 0, 10: 0 })).toBeNull();
     expect(computeClosing(2000, [], { 1: 0, 2: 0, 5: 0, 10: 3 })).toEqual({ expectedCents: 2000, countedCents: 3000, differenceCents: 1000 });
+  });
+});
+
+describe("eliminar caja abierta", () => {
+  const ID2 = "22222222-2222-4222-8222-222222222222";
+
+  it("borra la caja y sus ventas, y libera la apertura", async () => {
+    const { session } = await openCaja(repo, 2000);
+    await registerSale(repo, { id: ID, sessionId: session.id, amountCents: 1000 });
+    await registerSale(repo, { id: ID2, sessionId: session.id, amountCents: 500 });
+    expect(await deleteCaja(repo, { sessionId: session.id })).toEqual({ deletedSales: 2 });
+    expect(await getState(repo)).toBeNull();
+    expect(await repo.getSale(ID)).toBeNull();
+    const nueva = await openCaja(repo, 100); // la apertura quedó libre
+    expect(nueva.session.id).not.toBe(session.id);
+    expect(nueva.expectedCents).toBe(100);
+  });
+
+  it("rechaza una caja cerrada y la deja intacta", async () => {
+    const { session } = await openCaja(repo, 2000);
+    await closeCaja(repo, { sessionId: session.id, coins: { 1: 20, 2: 0, 5: 0, 10: 0 } });
+    await expect(deleteCaja(repo, { sessionId: session.id })).rejects.toMatchObject({ status: 409 });
+    const again = await closeCaja(repo, { sessionId: session.id, coins: { 1: 0, 2: 0, 5: 0, 10: 0 } });
+    expect(again.duplicate).toBe(true); // el cierre sigue ahí
+  });
+
+  it("valida el id y la existencia", async () => {
+    await expect(deleteCaja(repo, { sessionId: "x" })).rejects.toMatchObject({ status: 400 });
+    await expect(deleteCaja(repo, { sessionId: ID2 })).rejects.toMatchObject({ status: 404 });
+    const { session } = await openCaja(repo, 0);
+    await deleteCaja(repo, { sessionId: session.id });
+    await expect(deleteCaja(repo, { sessionId: session.id })).rejects.toMatchObject({ status: 404 });
   });
 });

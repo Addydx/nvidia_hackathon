@@ -66,6 +66,13 @@ export function createSupabaseRepo(url: string, serviceKey: string): CajaRepo {
       const row = data as ClosingRow;
       return { closing: toClosing(row), duplicate: row.duplicate };
     },
+    async deleteOpenSession(sessionId) {
+      const { data, error } = await db.rpc("delete_open_cash_session", { p_session_id: sessionId });
+      if (error?.code === "P0002") return null; // caja inexistente
+      if (error?.code === "P0001") throw new HttpError(409, "La caja ya está cerrada");
+      if (error) throw error;
+      return { deletedSales: Number((data as { deleted_sales: number }).deleted_sales) };
+    },
     async listSales(sessionId) {
       const { data, error } = await db
         .from("sales")
