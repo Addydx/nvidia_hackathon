@@ -1,0 +1,98 @@
+[
+  {
+    "esperado": 3000,
+    "contado": 2700,
+    "diferencia": -300,
+    "pregunta": "Esperado: $30 MXN. Contado: $27 MXN. Diferencia: -$3 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Faltan $3 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Faltan $3 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 10525,
+    "contado": 10000,
+    "diferencia": -525,
+    "pregunta": "Esperado: $105.25 MXN. Contado: $100 MXN. Diferencia: -$5.25 MXN. ¿Se perdió una venta?",
+    "objetivo": "Faltan $5.25 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Faltan $5.25 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 500,
+    "contado": 0,
+    "diferencia": -500,
+    "pregunta": "Esperado: $5 MXN. Contado: $0 MXN. Diferencia: -$5 MXN. ¿Cuánto falta?",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Sobran $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 12500,
+    "contado": 12600,
+    "diferencia": 100,
+    "pregunta": "Esperado: $125 MXN. Contado: $126 MXN. Diferencia: $1 MXN. ¿Qué pasó?",
+    "objetivo": "Sobran $1 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Sobran $1 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 9999,
+    "contado": 10000,
+    "diferencia": 1,
+    "pregunta": "Esperado: $99.99 MXN. Contado: $100 MXN. Diferencia: $0.01 MXN. ¿Es un error de cambio?",
+    "objetivo": "Sobran $0.01 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "No es un error de cambio. El contado coincide exactamente con el esperado. La diferencia es $0.01 MXN."
+  },
+  {
+    "esperado": 0,
+    "contado": 2500,
+    "diferencia": 2500,
+    "pregunta": "Esperado: $0 MXN. Contado: $25 MXN. Diferencia: $25 MXN. ¿Hay sobrante?",
+    "objetivo": "Sobran $25 MXN. Con los datos del cierre no puedo determinar la causa.",
+    "respuesta": "Sobran $25 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 0,
+    "contado": 0,
+    "diferencia": 0,
+    "pregunta": "Esperado: $0 MXN. Contado: $0 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 9100,
+    "contado": 9100,
+    "diferencia": 0,
+    "pregunta": "Esperado: $91 MXN. Contado: $91 MXN. Diferencia: $0 MXN. Explícame el cierre.",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "No hay diferencia del montó $0 MXN. El cierre es nulo."
+  },
+  {
+    "esperado": 4575,
+    "contado": 4575,
+    "diferencia": 0,
+    "pregunta": "Esperado: $45.75 MXN. Contado: $45.75 MXN. Diferencia: $0 MXN. ¿Cuál fue la diferencia?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN.",
+    "respuesta": "La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 8000,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $80 MXN. Diferencia: sin dato. ¿Cuánto falta?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre.",
+    "respuesta": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 30000,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $300 MXN. Contado: sin dato. Diferencia: sin dato. ¿Se perdió dinero?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre.",
+    "respuesta": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": null,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: sin dato. Diferencia: sin dato. ¿Qué datos necesitas?",
+    "objetivo": "Necesito el efectivo esperado y contado para explicar el cierre.",
+    "respuesta": "Necesito el efectivo contado para explicar el cierre."
+  }
+]
