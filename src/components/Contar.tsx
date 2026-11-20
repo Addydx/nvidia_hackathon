@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { describeDifference, formatCents, parsePesosToCents } from "@/lib/money";
+import { formatCents } from "@/lib/money";
 import type { Closing } from "@/lib/caja/types";
 import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount, type Denomination } from "@/lib/vision";
 import type { Conteo } from "@/lib/monedas-asistente";
@@ -32,15 +32,10 @@ export default function Contar() {
   const [original, setOriginal] = useState<CoinCount | null>(null); // lo que leyó la foto (para saber si el usuario corrigió)
   const [fotoId, setFotoId] = useState(0); // una foto nueva reinicia el asistente: no se mezclan resultados
   const [edit, setEdit] = useState<Record<Denomination, string>>(emptyCounts);
-  const [expectedInput, setExpectedInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const saveId = useRef<string | null>(null); // llave de idempotencia: un reintento no duplica el conteo
   const sending = useRef(false);
-
-  const [lateExpected, setLateExpected] = useState("");
-  const [lateError, setLateError] = useState<string | null>(null);
-  const [lateBusy, setLateBusy] = useState(false);
 
   useEffect(() => {
     if (!foto) return;
@@ -112,18 +107,22 @@ export default function Contar() {
   const totalCents = valid ? DENOMINATIONS.reduce((sum, d, i) => sum + d * (parsed[i] as number), 0) * 100 : 0;
   const conteoVivo: Conteo | null = valid ? ({ 1: parsed[0] as number, 2: parsed[1] as number, 5: parsed[2] as number, 10: parsed[3] as number }) : null;
   const corregido = !!original && valid && DENOMINATIONS.some((m, i) => (parsed[i] as number) !== original[m]);
-  const expectedCents = expectedInput.trim() === "" ? null : parsePesosToCents(expectedInput);
-  const expectedInvalid = expectedInput.trim() !== "" && expectedCents === null;
-  const diff = valid && expectedCents !== null ? describeDifference(totalCents - expectedCents) : null;
+  const ajustar = (m: Denomination, delta: number) => {
+    saveId.current = null;
+    setEdit((p) => {
+      const n = parseCount(p[m]);
+      return { ...p, [m]: String(Math.min(99999, Math.max(0, (n ?? 0) + delta))) };
+    });
+  };
 
   async function guardar() {
-    if (!valid || expectedInvalid || sending.current || !api) return;
+    if (!valid || sending.current || !api) return;
     sending.current = true;
     setSaving(true);
     setSaveError(null);
     const id = (saveId.current ??= crypto.randomUUID());
     const coins = Object.fromEntries(DENOMINATIONS.map((d, i) => [d, parsed[i]]));
-    const r = await api<{ closing: Closing }>("/api/conteos", { method: "POST", body: JSON.stringify({ id, coins, expectedCents }) });
+    const r = await api<{ closing: Closing }>("/api/conteos", { method: "POST", body: JSON.stringify({ id, coins, expectedCents: null }) });
     sending.current = false;
     setSaving(false);
     if (!r.ok) return setSaveError(r.status === 0 ? "Sin conexión. Reintenta: no se duplicará el conteo." : r.error);
@@ -132,37 +131,28 @@ export default function Contar() {
     setEditing(false);
     setOriginal(null);
     setEdit(emptyCounts());
-    setExpectedInput("");
     setFoto(null);
     setPreview(null);
   }
 
-  async function indicarEsperado(c: Closing) {
-    const cents = parsePesosToCents(lateExpected);
-    if (cents === null) return setLateError("Escribe un importe válido, por ejemplo 150 o 150.50");
-    if (!api || lateBusy) return;
-    setLateBusy(true);
-    setLateError(null);
-    const r = await api<{ closing: Closing }>("/api/conteos/esperado", { method: "POST", body: JSON.stringify({ closingId: c.id, expectedCents: cents }) });
-    setLateBusy(false);
-    if (!r.ok) return setLateError(r.error);
-    setHistory((h) => h.map((x) => (x.id === c.id ? r.data.closing : x)));
-    setLateExpected("");
-  }
-
   const last = history[0] ?? null;
   const older = history.slice(1, 11);
-  const d = last && last.differenceCents !== null ? describeDifference(last.differenceCents) : null;
 
   return (
     <main className="screen">
-      <header>
-        <h1>Cuenta tus monedas</h1>
-        <p className="muted">Toma una foto con las monedas separadas.</p>
+      <header className="marca">
+        <span className="marca-logo" aria-hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2.2" /><path d="M8 12.5l2.7 2.7L16.5 9" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </span>
+        <div>
+          <h1>VendIA</h1>
+          <p className="muted">Cuenta tus monedas con una foto</p>
+        </div>
       </header>
 
-      <div className="photo-stack">
-        <label className="btn primary file-btn big">
+      <div className="photo-actions">
+        <label className="btn primary file-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden><path d="M9 4l-1.8 2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.2L15 4H9zm3 4.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" fill="currentColor" /></svg>
           Tomar foto
           <input type="file" accept="image/*" capture="environment" onChange={elegir} />
         </label>
@@ -172,55 +162,49 @@ export default function Contar() {
         </label>
       </div>
 
-      <p className="notice" role="status">{analyzing ? "Analizando foto…" : null}</p>
+      {(preview && foto) || analyzing ? (
+        <figure className={`foto${analyzing ? " analizando" : ""}`}>
+          {preview && foto && (
+            // eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:)
+            <img className="preview" src={preview} alt="Vista previa de la foto de monedas" />
+          )}
+          {analyzing && <figcaption className="notice" role="status"><span className="punto" aria-hidden /> Analizando foto…</figcaption>}
+        </figure>
+      ) : (
+        <p className="notice" role="status" />
+      )}
       <p className="error" role="alert">{error}</p>
 
       {foto && error && !analyzing && <button className="btn primary" onClick={() => void analizar(foto)}>Reintentar</button>}
-      {!editing && (
+      {!editing && !analyzing && (
         <button className="btn-quiet" onClick={() => { setEditing(true); saveId.current = null; }}>Contar a mano</button>
       )}
 
-      {preview && foto && (
-        // eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:)
-        <img className="preview" src={preview} alt="Vista previa de la foto de monedas" />
-      )}
-
       {editing && (
-        <section className="expected" aria-label="Conteo de monedas">
-          <span className="label">Monedas contadas (revisa y corrige)</span>
-          <ul className="coins">
+        <section className="resultado" aria-label="Conteo de monedas">
+          <div className="total-hero">
+            <span className="label">Total detectado</span>
+            <strong data-testid="total">{valid ? formatCents(totalCents) : "—"}</strong>
+            <span className="muted">MXN</span>
+          </div>
+          <ul className="coins" aria-label="Monedas por denominación">
             {DENOMINATIONS.map((m, i) => (
-              <li key={m}>
-                <label htmlFor={`coin-${m}`}>${m}</label>
-                <input id={`coin-${m}`} data-testid={`coin-${m}`} className="coin-input" inputMode="numeric" autoComplete="off"
-                  value={edit[m]} aria-invalid={parsed[i] === null}
-                  onChange={(e) => { saveId.current = null; setEdit((p) => ({ ...p, [m]: e.target.value })); }} />
+              <li key={m} className={parsed[i] ? "hay" : undefined}>
+                <label htmlFor={`coin-${m}`} className="coin-chip">${m}</label>
+                <div className="stepper">
+                  <button type="button" aria-label={`Quitar una moneda de ${m} pesos`} onClick={() => ajustar(m, -1)}>−</button>
+                  <input id={`coin-${m}`} data-testid={`coin-${m}`} className="coin-input" inputMode="numeric" autoComplete="off"
+                    value={edit[m]} aria-invalid={parsed[i] === null}
+                    onChange={(e) => { saveId.current = null; setEdit((p) => ({ ...p, [m]: e.target.value })); }} />
+                  <button type="button" aria-label={`Añadir una moneda de ${m} pesos`} onClick={() => ajustar(m, 1)}>+</button>
+                </div>
                 <span className="sub">{parsed[i] === null ? "—" : formatCents(m * (parsed[i] as number) * 100)}</span>
               </li>
             ))}
           </ul>
           {!valid && <p className="error" role="alert">Escribe un número entero de monedas (0 a 99999) en cada fila.</p>}
-          <div className="total">
-            <span className="label">Total</span>
-            <strong data-testid="total">{valid ? formatCents(totalCents) : "—"}</strong>
-          </div>
-
-          <label htmlFor="esperado">Efectivo esperado (opcional)</label>
-          <div className="money-input">
-            <span aria-hidden>$</span>
-            <input id="esperado" data-testid="esperado" inputMode="decimal" autoComplete="off" placeholder="0.00" value={expectedInput}
-              aria-invalid={expectedInvalid} onChange={(e) => { saveId.current = null; setExpectedInput(e.target.value); }} />
-          </div>
-          {expectedInvalid && <p className="error" role="alert">Escribe un importe válido, por ejemplo 150 o 150.50</p>}
-          {diff && (
-            <div className="total">
-              <span className="label">Diferencia</span>
-              <strong data-testid="difference" data-kind={diff.kind}>{diff.label}</strong>
-            </div>
-          )}
-
           <p className="error" role="alert">{saveError}</p>
-          <button className="btn primary" disabled={!valid || expectedInvalid || saving || analyzing} onClick={() => void guardar()}>
+          <button className="btn primary" disabled={!valid || saving || analyzing} onClick={() => void guardar()}>
             {saving ? "Guardando…" : saveError ? "Reintentar guardado" : "Guardar conteo"}
           </button>
         </section>
@@ -231,66 +215,40 @@ export default function Contar() {
       {ready && profile.mode === "guest" && <GuestBanner />}
       {loadError && <p className="error" role="alert">{loadError}</p>}
 
-      {last && (
-        <section className="expected" aria-label="Último conteo">
-          <span className="label">Último conteo · {fecha(last.closedAt)}</span>
-          <ul className="coins">
-            {DENOMINATIONS.map((m) => (
-              <li key={m}>
-                <span>${m}</span>
-                <strong>{last.coins[m]}</strong>
-                <span className="sub">{formatCents(m * last.coins[m] * 100)}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="total">
-            <span className="label">Total contado</span>
-            <strong data-testid="last-total">{formatCents(last.countedCents)}</strong>
-          </div>
-          {last.expectedCents !== null && d ? (
-            <>
-              <div className="total">
-                <span className="label">Efectivo esperado</span>
-                <strong data-testid="last-expected">{formatCents(last.expectedCents)}</strong>
-              </div>
-              <div className="total">
-                <span className="label">Diferencia</span>
-                <strong data-testid="last-difference" data-kind={d.kind}>{d.label}</strong>
-              </div>
-            </>
-          ) : (
-            <form onSubmit={(e) => { e.preventDefault(); void indicarEsperado(last); }} className="late-expected">
-              <label htmlFor="esperado-tarde">¿Quieres calcular una diferencia? Indica el efectivo esperado</label>
-              <div className="money-input">
-                <span aria-hidden>$</span>
-                <input id="esperado-tarde" inputMode="decimal" autoComplete="off" placeholder="0.00" value={lateExpected}
-                  onChange={(e) => setLateExpected(e.target.value)} />
-              </div>
-              <p className="error" role="alert">{lateError}</p>
-              <button className="btn secondary" disabled={lateBusy || !lateExpected.trim()}>{lateBusy ? "Calculando…" : "Calcular diferencia"}</button>
-            </form>
-          )}
-          <p className="muted">{profile.mode === "guest" ? "Guardado solo en esta pestaña." : "Guardado en tu cuenta."}</p>
-        </section>
+      {last && !editing && (
+        <>
+          <section className="resultado" aria-label="Último conteo">
+            <div className="total-hero">
+              <span className="label">Último conteo · {fecha(last.closedAt)}</span>
+              <strong data-testid="last-total">{formatCents(last.countedCents)}</strong>
+              <span className="muted">{profile.mode === "guest" ? "Guardado solo en esta pestaña" : "Guardado en tu cuenta"}</span>
+            </div>
+            <ul className="coins resumen">
+              {DENOMINATIONS.map((m) => (
+                <li key={m} className={last.coins[m] ? "hay" : undefined}>
+                  <span className="coin-chip">${m}</span>
+                  <strong>{last.coins[m]}</strong>
+                  <span className="sub">{formatCents(m * last.coins[m] * 100)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <AsistenteMonedas key={last.id} conteo={last.coins as Conteo} closingId={last.id} />
+        </>
       )}
 
-      {last && <AsistenteMonedas key={last.id} conteo={last.coins as Conteo} closingId={last.id} />}
-
       {older.length > 0 && (
-        <section aria-label="Historial">
-          <h2>Historial</h2>
+        <details className="historial">
+          <summary>Historial ({older.length})</summary>
           <ul className="sales" data-testid="historial-conteos">
             {older.map((c) => (
               <li key={c.id}>
                 <time dateTime={c.closedAt}>{fecha(c.closedAt)}</time>
-                <span>
-                  {formatCents(c.countedCents)}
-                  {c.differenceCents !== null ? ` · ${describeDifference(c.differenceCents).label}` : ""}
-                </span>
+                <span>{formatCents(c.countedCents)}</span>
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       )}
     </main>
   );
