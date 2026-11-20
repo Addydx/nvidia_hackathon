@@ -1,0 +1,114 @@
+[
+  {
+    "esperado": 39000,
+    "contado": 39117,
+    "diferencia": 117,
+    "pregunta": "Esperado: $390 MXN. Contado: $391.17 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 39129,
+    "contado": 38798,
+    "diferencia": -331,
+    "pregunta": "Esperado: $391.29 MXN. Contado: $387.98 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 39258,
+    "contado": 39258,
+    "diferencia": 0,
+    "pregunta": "Esperado: $392.58 MXN. Contado: $392.58 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 39387,
+    "contado": 39587,
+    "diferencia": 200,
+    "pregunta": "Esperado: $393.87 MXN. Contado: $395.87 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 39516,
+    "contado": 39016,
+    "diferencia": -500,
+    "pregunta": "Esperado: $395.16 MXN. Contado: $390.16 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 39645,
+    "contado": 39645,
+    "diferencia": 0,
+    "pregunta": "Esperado: $396.45 MXN. Contado: $396.45 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": null,
+    "contado": 39891,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $398.91 MXN. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 39903,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $399.03 MXN. Contado: sin dato. Diferencia: sin dato. Explícame el cierre.",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  },
+  {
+    "esperado": 40032,
+    "contado": 40032,
+    "diferencia": 0,
+    "pregunta": "Esperado: $400.32 MXN. Contado: $400.32 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 40161,
+    "contado": 40361,
+    "diferencia": 200,
+    "pregunta": "Esperado: $401.61 MXN. Contado: $403.61 MXN. Diferencia: $2 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 40290,
+    "contado": 39790,
+    "diferencia": -500,
+    "pregunta": "Esperado: $402.90 MXN. Contado: $397.90 MXN. Diferencia: -$5 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $5 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 40419,
+    "contado": 40419,
+    "diferencia": 0,
+    "pregunta": "Esperado: $404.19 MXN. Contado: $404.19 MXN. Diferencia: $0 MXN. ¿Cuadró la caja?",
+    "objetivo": "La caja cuadra. La diferencia es $0 MXN."
+  },
+  {
+    "esperado": 40548,
+    "contado": 40665,
+    "diferencia": 117,
+    "pregunta": "Esperado: $405.48 MXN. Contado: $406.65 MXN. Diferencia: $1.17 MXN. ¿Qué pasó y por qué?",
+    "objetivo": "Sobran $1.17 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": 40677,
+    "contado": 40346,
+    "diferencia": -331,
+    "pregunta": "Esperado: $406.77 MXN. Contado: $403.46 MXN. Diferencia: -$3.31 MXN. Explícame el cierre.",
+    "objetivo": "Faltan $3.31 MXN. Con los datos del cierre no puedo determinar la causa."
+  },
+  {
+    "esperado": null,
+    "contado": 40806,
+    "diferencia": null,
+    "pregunta": "Esperado: sin dato. Contado: $408.06 MXN. Diferencia: sin dato. ¿Cuadró la caja?",
+    "objetivo": "Necesito el efectivo esperado para explicar el cierre."
+  },
+  {
+    "esperado": 40935,
+    "contado": null,
+    "diferencia": null,
+    "pregunta": "Esperado: $409.35 MXN. Contado: sin dato. Diferencia: sin dato. ¿Qué pasó y por qué?",
+    "objetivo": "Necesito el efectivo contado para explicar el cierre."
+  }
+]

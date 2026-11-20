@@ -3,47 +3,41 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatCents, parsePesosToCents } from "@/lib/money";
 import type { CajaState } from "@/lib/caja/types";
+import { profileKey, type Profile } from "@/lib/caja/transport";
+import GuestBanner from "./GuestBanner";
+import { useProfile } from "./ProfileProvider";
 
 type Pending = { id: string; sessionId: string; amountCents: number; error?: string; definitive?: boolean };
 
-const PENDING_KEY = "caja.pending";
+/** La venta pendiente se guarda por perfil: invitado → sessionStorage de la pestaña; cuenta → localStorage con su id. */
+const pendingStore = (p: Profile) => ({
+  storage: p.mode === "user" ? window.localStorage : window.sessionStorage,
+  key: `caja.pending.${profileKey(p)}`,
+});
 
-function readPending(): Pending | null {
+function readPending(p: Profile): Pending | null {
   try {
-    const raw = localStorage.getItem(PENDING_KEY);
+    const { storage, key } = pendingStore(p);
+    const raw = storage.getItem(key);
     return raw ? (JSON.parse(raw) as Pending) : null;
   } catch {
     return null;
   }
 }
-function writePending(p: Pending | null) {
+function writePending(p: Profile, v: Pending | null) {
   try {
-    if (p) localStorage.setItem(PENDING_KEY, JSON.stringify(p));
-    else localStorage.removeItem(PENDING_KEY);
+    const { storage, key } = pendingStore(p);
+    if (v) storage.setItem(key, JSON.stringify(v));
+    else storage.removeItem(key);
   } catch {
     /* sin almacenamiento: el importe sigue en memoria */
-  }
-}
-
-async function api<T>(path: string, init?: RequestInit): Promise<{ ok: true; data: T } | { ok: false; status: number; error: string }> {
-  try {
-    const res = await fetch(path, {
-      ...init,
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(10_000),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 401) window.location.replace("/acceso"); // sesión vencida o sin iniciar
-    if (res.ok) return { ok: true, data: body as T };
-    return { ok: false, status: res.status, error: body?.error ?? "No se pudo completar la operación" };
-  } catch {
-    return { ok: false, status: 0, error: "Sin conexión con el servidor" };
   }
 }
 
 const hora = (iso: string) => new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
 
 export default function Caja() {
+  const { ready, profile, api } = useProfile();
   const [state, setState] = useState<CajaState | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -59,20 +53,21 @@ export default function Caja() {
   const inFlight = useRef(false);
 
   const load = useCallback(async () => {
+    if (!api) return;
     setLoading(true);
     setLoadError(null);
-    const r = await api<{ state: CajaState | null }>("/api/caja", { cache: "no-store" });
+    const r = await api<{ state: CajaState | null }>("/api/caja");
     if (!r.ok) {
       setLoadError(r.error);
     } else {
       setState(r.data.state);
-      const p = readPending();
+      const p = readPending(profile);
       const stale = !p || !r.data.state || p.sessionId !== r.data.state.session.id || r.data.state.sales.some((s) => s.id === p.id);
-      if (stale) writePending(null);
+      if (stale) writePending(profile, null);
       setPending(stale ? null : p);
     }
     setLoading(false);
-  }, []);
+  }, [api, profile]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial desde el servidor
@@ -85,7 +80,7 @@ export default function Caja() {
     if (cents === null) return setFormError("Escribe un importe válido, por ejemplo 20 o 20.50");
     setFormError(null);
     setSaving(true);
-    const r = await api<{ state: CajaState }>("/api/caja/abrir", { method: "POST", body: JSON.stringify({ openingCents: cents }) });
+    const r = await api!<{ state: CajaState }>("/api/caja/abrir", { method: "POST", body: JSON.stringify({ openingCents: cents }) });
     setSaving(false);
     if (!r.ok) return setFormError(r.error);
     setState(r.data.state);
@@ -97,21 +92,21 @@ export default function Caja() {
     inFlight.current = true;
     setSaving(true);
     setNotice(null);
-    const r = await api<{ state: CajaState }>("/api/caja/ventas", {
+    const r = await api!<{ state: CajaState }>("/api/caja/ventas", {
       method: "POST",
       body: JSON.stringify({ id: p.id, sessionId: p.sessionId, amountCents: p.amountCents }),
     });
     inFlight.current = false;
     setSaving(false);
     if (r.ok) {
-      writePending(null);
+      writePending(profile, null);
       setPending(null);
       setState(r.data.state);
       setSaleInput("");
       setNotice("Venta guardada");
     } else {
       const failed = { ...p, error: r.error, definitive: r.status >= 400 && r.status < 500 };
-      writePending(failed);
+      writePending(profile, failed);
       setPending(failed);
     }
   }
@@ -123,13 +118,13 @@ export default function Caja() {
     if (cents === null || cents <= 0) return setFormError("Escribe un importe de venta válido, por ejemplo 10 o 10.50");
     setFormError(null);
     const p: Pending = { id: crypto.randomUUID(), sessionId: state.session.id, amountCents: cents };
-    writePending(p);
+    writePending(profile, p);
     setPending(p);
     void enviar(p);
   }
 
   function descartar() {
-    writePending(null);
+    writePending(profile, null);
     setPending(null);
     setSaleInput("");
   }
@@ -138,14 +133,14 @@ export default function Caja() {
     if (!state || deleting) return;
     setDeleting(true);
     setDeleteError(null);
-    const r = await api<{ deletedSales: number }>("/api/caja/limpiar", {
+    const r = await api!<{ deletedSales: number }>("/api/caja/limpiar", {
       method: "POST",
       body: JSON.stringify({ sessionId: state.session.id }),
     });
     setDeleting(false);
     // 404: la caja ya no existe (borrada antes); el resultado es el mismo.
     if (!r.ok && r.status !== 404) return setDeleteError(r.error);
-    writePending(null);
+    writePending(profile, null);
     setPending(null);
     setSaleInput("");
     setNotice(null);
@@ -154,7 +149,7 @@ export default function Caja() {
     setState(null); // vuelve a la pantalla de abrir caja
   }
 
-  if (loading) return <main className="screen"><p className="muted" role="status">Cargando caja…</p></main>;
+  if (!ready || loading) return <main className="screen"><p className="muted" role="status">Cargando caja…</p></main>;
 
   if (loadError)
     return (
@@ -169,6 +164,7 @@ export default function Caja() {
     return (
       <main className="screen">
         <h1>Caja</h1>
+        {profile.mode === "guest" && <GuestBanner />}
         <p className="muted">Abre tu caja con el dinero inicial para dar cambio.</p>
         <form onSubmit={abrir} noValidate>
           <label htmlFor="opening">Dinero inicial para cambio</label>
@@ -190,6 +186,8 @@ export default function Caja() {
         <h1>Caja</h1>
         <p className="muted">Abierta a las {hora(state.session.openedAt)} · cambio inicial {formatCents(state.session.openingCents)}</p>
       </header>
+
+      {profile.mode === "guest" && <GuestBanner />}
 
       <section className="expected" aria-label="Efectivo esperado">
         <span className="label">Efectivo esperado</span>

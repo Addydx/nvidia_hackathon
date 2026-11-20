@@ -81,3 +81,17 @@ label, .label { display: block; color: var(--muted); font-size: .9rem; margin-bo
 .session-bar button:hover, .session-bar button:focus-visible { color: var(--lime); outline: 0; }
 .btn-quiet { background: none; border: 0; color: var(--muted); font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 12px; justify-self: center; }
 .btn-quiet:hover, .btn-quiet:focus-visible { color: var(--text); outline: 0; }
+
+/* Modo invitado */
+.guest-banner { background: linear-gradient(135deg, rgba(163, 230, 53, .12), rgba(38, 40, 43, .6)); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.guest-banner p { margin: 0 0 12px; line-height: 1.45; }
+.guest-actions { display: flex; align-items: center; gap: 16px; }
+.guest-actions .btn { width: auto; min-height: 48px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; text-decoration: none; }
+.guest-link { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 10px 0; }
+.guest-link:hover, .guest-link:focus-visible { color: var(--lime); outline: 0; }
+.session-login { color: var(--lime); font-weight: 700; text-decoration: none; padding: 8px 0; }
+.session-login:hover, .session-login:focus-visible { text-decoration: underline; outline: 0; }
+.history { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+.history li { border-top: 1px solid var(--line); padding-top: 10px; }
+.history .q { color: var(--muted); margin: 0 0 4px; font-size: .95rem; }
+.history .a { margin: 0; line-height: 1.4; }

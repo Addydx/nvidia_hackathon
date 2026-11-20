@@ -52,6 +52,8 @@ export interface CajaRepo {
    * Null si no existe. Lanza HttpError 409 si la caja ya está cerrada.
    */
   deleteOpenSession(userId: string, sessionId: string): Promise<{ deletedSales: number } | null>;
+  /** Último cierre confirmado del usuario (el más reciente) o null. */
+  getLastClosing(userId: string): Promise<Closing | null>;
   getSale(userId: string, id: string): Promise<Sale | null>;
   /** Inserta si el id no existe; si existe no hace nada. Devuelve la venta almacenada y si ya existía. */
   insertSaleOnce(userId: string, sale: { id: string; sessionId: string; amountCents: number }): Promise<{ sale: Sale; duplicate: boolean }>;

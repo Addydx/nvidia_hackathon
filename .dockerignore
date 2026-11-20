@@ -8,3 +8,6 @@ supabase
 deploy
 Docs
 *.md
+asistente/.venv
+asistente/.modelo
+asistente/t4/adapter

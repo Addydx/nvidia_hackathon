@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import PreguntarCierre from "./PreguntarCierre";
+import { useProfile } from "./ProfileProvider";
 import { describeDifference, formatCents } from "@/lib/money";
 import type { CajaState, Closing } from "@/lib/caja/types";
 import { DENOMINATIONS, MAX_PHOTO_BYTES, type CoinCount, type Denomination } from "@/lib/vision";
@@ -12,6 +14,8 @@ const emptyCounts = (): Record<Denomination, string> => ({ 1: "0", 2: "0", 5: "0
 const parseCount = (t: string): number | null => (/^\d{1,5}$/.test(t.trim()) ? Number(t.trim()) : null);
 
 export default function Cierre() {
+  const { ready, profile, api } = useProfile();
+  const [last, setLast] = useState<Closing | null>(null);
   const [caja, setCaja] = useState<CajaState | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -37,19 +41,24 @@ export default function Cierre() {
   useEffect(() => () => run.current?.abort(), []);
 
   const load = useCallback(async () => {
+    if (!api) return;
     setLoading(true);
     setLoadError(null);
-    try {
-      const res = await fetch("/api/caja", { cache: "no-store", signal: AbortSignal.timeout(10_000) });
-      const body = await res.json().catch(() => ({}));
-      if (res.status === 401) return void window.location.replace("/acceso");
-      if (!res.ok) throw new Error(body?.error ?? "No se pudo cargar la caja.");
-      setCaja(body.state as CajaState | null);
-    } catch (e) {
-      setLoadError(e instanceof Error && e.name !== "TimeoutError" && e.name !== "TypeError" ? e.message : "Sin conexión con el servidor.");
+    const r = await api<{ state: CajaState | null }>("/api/caja");
+    if (!r.ok) {
+      setLoadError(r.error);
+    } else {
+      setCaja(r.data.state);
+      // Sin caja abierta se muestra el último cierre del PERFIL activo (cuenta o invitado), con su asistente.
+      if (!r.data.state) {
+        const u = await api<{ closing: Closing | null }>("/api/cierre/ultimo");
+        setLast(u.ok ? u.data.closing : null);
+      } else {
+        setLast(null);
+      }
     }
     setLoading(false);
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial desde el servidor
@@ -71,7 +80,6 @@ export default function Cierre() {
         signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(90_000)]),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 401) return void window.location.replace("/acceso");
       if (!res.ok) throw new Error(data?.error ?? "No se pudo analizar la foto.");
       if (run.current === ctrl) {
         const c = data.conteo as CoinCount;
@@ -110,26 +118,22 @@ export default function Cierre() {
     setConfirmError(null);
     try {
       const coins = Object.fromEntries(DENOMINATIONS.map((d, i) => [d, parsed[i]]));
-      const res = await fetch("/api/cierre/confirmar", {
+      const r = await api!<{ closing: Closing }>("/api/cierre/confirmar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId: caja.session.id, coins }),
-        signal: AbortSignal.timeout(15_000),
       });
-      const body = await res.json().catch(() => ({}));
-      if (res.status === 401) return void window.location.replace("/acceso");
-      if (!res.ok) throw new Error(body?.error ?? "No se pudo confirmar el cierre.");
-      setClosing(body.closing as Closing);
+      if (!r.ok) throw new Error(r.status === 0 ? "Sin conexión. Reintenta: no se duplicará el cierre." : r.error);
+      setClosing(r.data.closing);
     } catch (e) {
       // Reintentar con la misma caja recupera el mismo cierre si ya se había guardado.
-      setConfirmError(e instanceof Error && e.name !== "TimeoutError" && e.name !== "TypeError" ? e.message : "Sin conexión. Reintenta: no se duplicará el cierre.");
+      setConfirmError(e instanceof Error ? e.message : "No se pudo confirmar el cierre.");
     } finally {
       sending.current = false;
       setSaving(false);
     }
   }
 
-  if (loading) return <main className="screen"><p className="muted" role="status">Cargando caja…</p></main>;
+  if (!ready || loading) return <main className="screen"><p className="muted" role="status">Cargando caja…</p></main>;
 
   if (loadError)
     return (
@@ -140,38 +144,44 @@ export default function Cierre() {
       </main>
     );
 
-  if (closing) {
-    const d = describeDifference(closing.differenceCents);
+  const view = closing ?? (!caja ? last : null);
+  if (view) {
+    const d = describeDifference(view.differenceCents);
+    const reciente = !!closing;
     return (
       <main className="screen">
         <header>
-          <h1>Caja cerrada</h1>
-          <p className="muted">Cierre guardado.</p>
+          <h1>{reciente ? "Caja cerrada" : "Último cierre"}</h1>
+          <p className="muted">
+            {reciente ? "Cierre guardado." : new Date(view.closedAt).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
+            {profile.mode === "guest" ? " · Guardado solo en esta pestaña." : ""}
+          </p>
         </header>
         <section className="expected" aria-label="Resultado del cierre">
           <ul className="coins">
             {DENOMINATIONS.map((m) => (
               <li key={m}>
                 <span>${m}</span>
-                <strong>{closing.coins[m]}</strong>
-                <span className="sub">{formatCents(m * closing.coins[m] * 100)}</span>
+                <strong>{view.coins[m]}</strong>
+                <span className="sub">{formatCents(m * view.coins[m] * 100)}</span>
               </li>
             ))}
           </ul>
           <div className="total">
             <span className="label">Efectivo esperado</span>
-            <strong data-testid="closed-expected">{formatCents(closing.expectedCents)}</strong>
+            <strong data-testid="closed-expected">{formatCents(view.expectedCents)}</strong>
           </div>
           <div className="total">
             <span className="label">Efectivo contado</span>
-            <strong data-testid="closed-counted">{formatCents(closing.countedCents)}</strong>
+            <strong data-testid="closed-counted">{formatCents(view.countedCents)}</strong>
           </div>
           <div className="total">
             <span className="label">Diferencia</span>
             <strong data-testid="closed-difference" data-kind={d.kind}>{d.label}</strong>
           </div>
-          <p className="muted" data-testid="closed-difference-cents">Diferencia: {closing.differenceCents} centavos</p>
+          <p className="muted" data-testid="closed-difference-cents">Diferencia: {view.differenceCents} centavos</p>
         </section>
+        <PreguntarCierre key={view.id} closing={view} />
         <Link className="btn secondary file-btn" href="/">Abrir otra caja</Link>
       </main>
     );

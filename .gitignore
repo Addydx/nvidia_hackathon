@@ -42,4 +42,8 @@ next-env.d.ts
 
 # permitir plantilla de variables
 !.env.example
+
+/asistente/.venv/
+/asistente/.modelo/
+__pycache__/
 .cutover-previous-image
