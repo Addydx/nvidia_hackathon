@@ -1,0 +1,19 @@
+{
+  "caso": 13,
+  "categoria": "fuera_de_alcance",
+  "pregunta": "¿Cuál es la capital de Francia?",
+  "mensajes": [
+    {
+      "role": "system",
+      "content": "Explica el cierre en español. Usa la diferencia calculada, en MXN. Si faltan datos, pídelos. No atribuyas causas. Si preguntan algo ajeno al cierre, explica brevemente tu alcance."
+    },
+    {
+      "role": "user",
+      "content": "Esperado: $42 MXN. Contado: $40 MXN. Diferencia: -$2 MXN. ¿Cuál es la capital de Francia?"
+    }
+  ],
+  "objetivo": "Redirigir al cierre sin responder la pregunta de geografía.",
+  "dispositivo": "mps",
+  "base": "La capital de Francia es París.",
+  "ajustado": "Sobran $2 MXN. Con los datos del cierre no puedo determinar la capital de Francia. El cierre indica que faltan $2 MXN."
+}

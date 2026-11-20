@@ -1,8 +1,8 @@
 # Preguntar sobre mi cierre
 
-Después de confirmar un cierre, pulsa **Preguntar sobre mi cierre**. El botón pregunta qué pasó y por qué. El navegador envía el identificador del cierre. Next.js verifica la sesión con el módulo de cuentas y busca el cierre unido a una caja de ese usuario en Supabase. Solo envía a la GPU el efectivo esperado, el contado y la diferencia guardada. Si falta un dato, lo pide por nombre.
+Después de confirmar un cierre, escribe una pregunta de hasta 240 caracteres en **Preguntar sobre mi cierre**. El navegador envía el identificador y la pregunta. Next.js verifica la sesión, consulta el cierre y su caja por propietario, y envía al servicio privado la pregunta y los tres importes guardados.
 
-La respuesta visible usa una frase comprobada contra la diferencia. Si el modelo añade una causa, cambia el signo, devuelve otra redacción o tarda más de 15 segundos, el servidor construye la frase a partir de los centavos guardados. La prueba de calidad de abajo evalúa las salidas crudas de Qwen antes de esta comprobación.
+El panel muestra siempre el esperado, el contado y la diferencia con signo. **Respuesta de Qwen** identifica texto generado por el modelo. El servidor comprueba cada frase y su relación con los datos solicitados. Puede aceptar varias maneras de expresar un importe. Cuando una frase no se puede verificar, faltan datos o falla el servicio, aparece **Resumen automático**. Los importes proceden de Caja en ambos casos.
 
 ## Repetir en el laboratorio
 
@@ -35,17 +35,36 @@ Ambos mencionaron la magnitud exacta en 9/9 casos completos. El resultado correc
 
 ## Cargar el adaptador para la app
 
-El adaptador está en **asistente/t4/adapter**. En un servidor de inferencia privado con GPU y una instalación de vLLM compatible con su controlador, ejecuta desde la raíz del repo el siguiente ejemplo. La clave se suministra en el entorno del servidor.
+El adaptador entrenado está en **asistente/t4/adapter**. El servidor privado de prueba carga ese directorio con PEFT y selecciona CUDA, Metal en Mac o CPU según el equipo. El modelo base debe corresponder a la revisión guardada en **t4/config.json**.
+
+Desde la raíz del repositorio, con Python 3.12:
 
 ```sh
-vllm serve Qwen/Qwen2.5-1.5B-Instruct \
-  --revision 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 \
-  --dtype half --max-model-len 512 --enable-lora \
-  --lora-modules corte-lora=asistente/t4/adapter \
-  --host 127.0.0.1 --port 8001 --api-key "$CIERRE_CHAT_KEY"
+python3.12 -m venv asistente/.venv
+asistente/.venv/bin/pip install -r asistente/requirements.txt
+asistente/.venv/bin/huggingface-cli download Qwen/Qwen2.5-1.5B-Instruct \
+  --revision 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 --local-dir asistente/.modelo \
+  --include config.json generation_config.json tokenizer_config.json tokenizer.json vocab.json merges.txt model.safetensors
 ```
 
-Configura **CIERRE_CHAT_URL** solo en el servidor Next.js con la URL completa del servicio, por ejemplo http://127.0.0.1:8001/v1/chat/completions si ambos procesos comparten máquina y red. Para máquinas distintas usa la dirección privada protegida correspondiente. Guarda **CIERRE_CHAT_KEY** en el gestor de secretos del despliegue o en .env.local para desarrollo. El nombre solicitado al servicio es corte-lora. Este PR incluye el adaptador y la conexión opcional. El despliegue de ese servicio queda pendiente. [Carga de adaptadores en vLLM](https://docs.vllm.ai/en/stable/features/lora/).
+En un archivo privado **.env.test.local**, configura CIERRE_CHAT_URL con http://127.0.0.1:18461/v1/chat/completions y CIERRE_CHAT_KEY con una clave aleatoria. Arranca el servidor en una terminal y Next.js en otra, cargando ese mismo archivo en ambas. Para una prueba con cuentas reales, Next.js también necesita las variables de Supabase del entorno de prueba y su migración de cuentas aplicada.
+
+```sh
+# Terminal de inferencia
+set -a
+. ./.env.test.local
+set +a
+asistente/.venv/bin/uvicorn servicio:app --app-dir asistente --host 127.0.0.1 --port 18461
+
+# Otra terminal, desde la raíz
+node --env-file=.env.test.local node_modules/next/dist/bin/next dev --hostname 127.0.0.1
+```
+
+Si la descarga se detiene sin avanzar, repítela con HF_HUB_DISABLE_XET=1; se reanuda desde el archivo parcial. Comprueba que model.safetensors mida 3087467144 bytes y que su SHA-256 sea dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee. La primera petición en Mac tarda más de 15 s por la carga inicial y se atiende con el resumen automático.
+
+Prueba en vivo del 20 de noviembre de 2026 (Mac, Metal, esperado $30, contado $27): en 10 preguntas Qwen con LoRA cambió el signo ("Sobran $3 MXN"), mezcló conceptos o redactó mal, y el servidor mostró el resumen automático en las 10, con los importes y el signo de Caja. El caso fuera de alcance, guardado en **t4/alcance.json** con **evaluar_alcance.py**, dio la respuesta cruda "Sobran $2 MXN. Con los datos del cierre no puedo determinar la capital de Francia. El cierre indica que faltan $2 MXN."; la aplicación la sustituye por el aviso de alcance.
+
+El servicio exige la clave y sirve únicamente el modelo corte-lora. Las credenciales, los pesos base y el entorno Python están excluidos de Git. El ZIP de entrenamiento sigue siendo independiente del servidor de prueba.
 
 ## Verificar la integración
 
