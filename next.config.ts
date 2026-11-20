@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone", // imagen de contenedor mínima (Dockerfile)
   cacheComponents: true,
   partialPrefetching: true,
 };
